@@ -1,0 +1,22 @@
+# AI Medical Assist / Aegis Health - backend (Django REST API)
+# Versions are PINNED: the deployed scikit-learn must match the version that
+# trained the model artifact, or unpickling it breaks.
+
+# --- Web framework ---
+Django==6.0.6
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+
+# --- Production server & static files ---
+gunicorn==23.0.0
+whitenoise==6.11.0
+
+# --- Database (Supabase / PostgreSQL) ---
+psycopg2-binary==2.9.12
+
+# --- ML serving (must match the training environment) ---
+scikit-learn==1.9.0
+joblib==1.5.3
+numpy==2.4.6
+pandas==3.0.3

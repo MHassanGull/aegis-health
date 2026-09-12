@@ -1,0 +1,32 @@
+# ── Secrets (NEVER commit) ──────────────────────────────────────────────
+backend/.env
+*.env
+!.env.example
+
+# ── Python ──────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+venv/
+backend/db.sqlite3
+backend/staticfiles/
+backend/_server.log
+
+# ── ML: training data is huge; the SERVED model lives in backend/ml_assets/
+ml/data/
+ml/artifacts/
+ml/reports/*.png
+
+# ── Flutter ─────────────────────────────────────────────────────────────
+mobile/build/
+mobile/.dart_tool/
+mobile/.idea/
+mobile/android/.gradle/
+mobile/android/.kotlin/
+mobile/android/local.properties
+mobile/ios/Flutter/ephemeral/
+mobile/.flutter-plugins-dependencies
+
+# ── OS / editor ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

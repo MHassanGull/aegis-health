@@ -1,0 +1,7 @@
+# Data and generated artifacts (do not commit large/binary files)
+data/
+artifacts/
+reports/
+__pycache__/
+*.pyc
+.venv/

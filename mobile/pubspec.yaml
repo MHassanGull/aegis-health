@@ -1,0 +1,41 @@
+name: ai_medical_assist
+description: Aegis Health - predict your future health risk and protect it.
+publish_to: "none"
+version: 2.0.0+2
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  provider: ^6.1.0
+  shared_preferences: ^2.2.0
+  cupertino_icons: ^1.0.6
+  flutter_animate: ^4.5.0
+  fl_chart: ^0.69.0
+  smooth_page_indicator: ^1.1.0
+  url_launcher: ^6.2.0
+  image_picker: ^1.1.2
+  flutter_local_notifications: ^17.2.4
+  timezone: ^0.9.4
+  flutter_secure_storage: ^9.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#20A57A"
+  adaptive_icon_foreground: "assets/icon/icon_fg.png"

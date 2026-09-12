@@ -1,0 +1,29 @@
+name: API keep-alive
+
+# Render's free tier puts a service to sleep after 15 minutes of no traffic,
+# and the next request then takes ~50 seconds to wake it. This pings the health
+# endpoint every 10 minutes so the API is always warm — important during a live
+# demo or viva.
+#
+# Setup (one time):
+#   Repo -> Settings -> Secrets and variables -> Actions -> New repository secret
+#     Name:  API_URL
+#     Value: https://<your-service>.onrender.com
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 minutes
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the API health endpoint
+        env:
+          API_URL: ${{ secrets.API_URL }}
+        run: |
+          if [ -z "$API_URL" ]; then echo "API_URL secret not set"; exit 1; fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$API_URL/api/health/")
+          echo "health check -> HTTP $code"
+          [ "$code" = "200" ]

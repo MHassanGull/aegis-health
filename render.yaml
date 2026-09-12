@@ -1,0 +1,41 @@
+# Render Blueprint — deploys the Aegis Health backend as a public API.
+# Render reads this file automatically when you create a "Blueprint" service.
+services:
+  - type: web
+    name: aegis-health-api
+    runtime: python
+    plan: free
+    rootDir: backend          # the Django project lives here
+    region: singapore         # closest Render region to Pakistan
+
+    # Install deps, collect admin static files, apply DB migrations.
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate --noinput
+
+    # 1 worker (the ML model is loaded per-worker; free tier has 512 MB RAM),
+    # 4 threads so several users can be served at once.
+    startCommand: gunicorn config.wsgi:application --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
+
+    healthCheckPath: /api/health/
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.7"
+      - key: DJANGO_DEBUG
+        value: "0"            # production hardening ON (HTTPS, HSTS, no debug pages)
+      - key: DJANGO_SECRET_KEY
+        generateValue: true   # Render generates a strong secret for you
+      - key: LLM_PROVIDER
+        value: claude
+      - key: CLAUDE_MODEL
+        value: claude-haiku-4-5
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # --- Set these two yourself in the Render dashboard (they are secrets) ---
+      - key: DATABASE_URL
+        sync: false           # your Supabase session-pooler URL
+      - key: ANTHROPIC_API_KEY
+        sync: false           # your Anthropic key (powers the AI Assistant)

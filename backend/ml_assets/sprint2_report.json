@@ -1,0 +1,105 @@
+{
+  "records": 253155,
+  "features": [
+    "HighBP",
+    "HighChol",
+    "CholCheck",
+    "BMI",
+    "Smoker",
+    "Stroke",
+    "HeartDiseaseorAttack",
+    "PhysActivity",
+    "Fruits",
+    "Veggies",
+    "HvyAlcoholConsump",
+    "AnyHealthcare",
+    "NoDocbcCost",
+    "GenHlth",
+    "MentHlth",
+    "PhysHlth",
+    "DiffWalk",
+    "Sex",
+    "Age"
+  ],
+  "prevalence": {
+    "Diabetes_binary": 0.1389,
+    "Kidney_binary": 0.0374
+  },
+  "multitask": {
+    "Diabetes_binary": {
+      "threshold": 0.09959142628089293,
+      "recall": 0.8411,
+      "precision": 0.2768,
+      "f1": 0.4166,
+      "roc_auc": 0.8227,
+      "pr_auc": 0.4095,
+      "confusion": [
+        [
+          28482,
+          15221
+        ],
+        [
+          1101,
+          5827
+        ]
+      ]
+    },
+    "Kidney_binary": {
+      "threshold": 0.021543669720872533,
+      "recall": 0.8584,
+      "precision": 0.0682,
+      "f1": 0.1263,
+      "roc_auc": 0.7933,
+      "pr_auc": 0.1372,
+      "confusion": [
+        [
+          26523,
+          22215
+        ],
+        [
+          268,
+          1625
+        ]
+      ]
+    }
+  },
+  "baseline": {
+    "Diabetes_binary": {
+      "threshold": 0.44466845741287947,
+      "recall": 0.8376,
+      "precision": 0.2769,
+      "f1": 0.4162,
+      "roc_auc": 0.823,
+      "pr_auc": 0.4088,
+      "confusion": [
+        [
+          28548,
+          15155
+        ],
+        [
+          1125,
+          5803
+        ]
+      ]
+    },
+    "Kidney_binary": {
+      "threshold": 0.3506989985498045,
+      "recall": 0.8627,
+      "precision": 0.0682,
+      "f1": 0.1265,
+      "roc_auc": 0.7929,
+      "pr_auc": 0.1354,
+      "confusion": [
+        [
+          26438,
+          22300
+        ],
+        [
+          260,
+          1633
+        ]
+      ]
+    }
+  },
+  "elapsed_seconds": 28.3
+}

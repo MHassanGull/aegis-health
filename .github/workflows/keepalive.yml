@@ -1,0 +1,27 @@
+name: Supabase keep-alive
+
+# Runs in GitHub's cloud (works even when your laptop is off) so the free-tier
+# Supabase project never idles for 7 days and gets paused.
+#
+# Setup (one time):
+#   1. Push this repo to GitHub.
+#   2. Repo → Settings → Secrets and variables → Actions → New repository secret
+#      Name:  DATABASE_URL
+#      Value: your Supabase session-pooler URL (same as in backend/.env)
+#   3. Done — it pings the DB every 2 days automatically.
+
+on:
+  schedule:
+    - cron: "0 12 */2 * *"   # every 2 days at 12:00 UTC
+  workflow_dispatch:          # lets you run it manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y postgresql-client
+          psql "$DATABASE_URL" -c "select 1;" && echo "keep-alive OK"

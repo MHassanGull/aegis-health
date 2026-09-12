@@ -1,0 +1,112 @@
+{
+  "records": 253155,
+  "features": [
+    "HighBP",
+    "HighChol",
+    "CholCheck",
+    "BMI",
+    "Smoker",
+    "Stroke",
+    "HeartDiseaseorAttack",
+    "PhysActivity",
+    "Fruits",
+    "Veggies",
+    "HvyAlcoholConsump",
+    "AnyHealthcare",
+    "NoDocbcCost",
+    "GenHlth",
+    "MentHlth",
+    "PhysHlth",
+    "DiffWalk",
+    "Sex",
+    "Age"
+  ],
+  "prevalence": {
+    "Diabetes_binary": 0.1389,
+    "Kidney_binary": 0.0374
+  },
+  "n_folds": 5,
+  "calibrated": true,
+  "overall_accuracy": 0.9148,
+  "cv": {
+    "Diabetes_binary": {
+      "roc_auc": {
+        "mean": 0.8275,
+        "std": 0.0031
+      },
+      "accuracy": {
+        "mean": 0.8665,
+        "std": 0.0011
+      },
+      "balanced_accuracy": {
+        "mean": 0.5653,
+        "std": 0.0059
+      },
+      "recall": {
+        "mean": 0.1483,
+        "std": 0.0148
+      }
+    },
+    "Kidney_binary": {
+      "roc_auc": {
+        "mean": 0.785,
+        "std": 0.0024
+      },
+      "accuracy": {
+        "mean": 0.9626,
+        "std": 0.0
+      },
+      "balanced_accuracy": {
+        "mean": 0.5,
+        "std": 0.0
+      },
+      "recall": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    }
+  },
+  "final": {
+    "Diabetes_binary": {
+      "roc_auc": 0.8223,
+      "pr_auc": 0.3987,
+      "threshold": 0.13170731707317074,
+      "recall": 0.8437,
+      "precision": 0.276,
+      "f1": 0.4159,
+      "confusion": [
+        [
+          28367,
+          15336
+        ],
+        [
+          1083,
+          5845
+        ]
+      ],
+      "accuracy": 0.8669,
+      "balanced_accuracy": 0.5618
+    },
+    "Kidney_binary": {
+      "roc_auc": 0.7919,
+      "pr_auc": 0.1299,
+      "threshold": 0.02450188476036618,
+      "recall": 0.8679,
+      "precision": 0.0658,
+      "f1": 0.1224,
+      "confusion": [
+        [
+          25419,
+          23319
+        ],
+        [
+          250,
+          1643
+        ]
+      ],
+      "accuracy": 0.9626,
+      "balanced_accuracy": 0.5
+    }
+  },
+  "elapsed_seconds": 329.7
+}
