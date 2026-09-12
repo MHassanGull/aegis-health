@@ -1,113 +1,136 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 
-/// An animated circular risk gauge that fills up on display.
+/// A risk readout drawn as a linear measure rather than a dial.
+///
+/// A donut with a glowing sweep looks decorative; a measure with a marked
+/// threshold reads like an instrument and shows the one thing that actually
+/// matters clinically — where this person sits relative to the model's
+/// screening cut-off.
 class RiskGauge extends StatelessWidget {
   final String title;
   final double percent; // 0-100
   final String tier;
-  final IconData icon;
-  final double size;
+
+  /// The model's screening threshold, as a percentage, marked on the scale.
+  final double? threshold;
+
+  /// Accepted for call-site compatibility; this design does not use an icon.
+  final IconData? icon;
+
+  /// Set when the gauge sits on the near-black band, so labels and the
+  /// threshold tick invert instead of disappearing into the field.
+  final bool onDark;
+
+  /// Full scale of the measure. Risks are small numbers, so a 0-100 axis would
+  /// render every bar as a sliver; 50% is a readable, honest ceiling.
+  final double scaleMax;
 
   const RiskGauge({
     super.key,
     required this.title,
     required this.percent,
     required this.tier,
-    required this.icon,
-    this.size = 132,
+    this.threshold,
+    this.icon,
+    this.onDark = false,
+    this.scaleMax = 50,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = AppTheme.tierColor(tier);
     final p = Palette.of(context);
+    final color = AppTheme.tierColor(tier);
+    final ink = onDark ? Colors.white : p.ink;
+    final muted =
+        onDark ? Colors.white.withValues(alpha: 0.55) : p.subtle;
+    final track = onDark ? Colors.white.withValues(alpha: 0.16) : p.line;
+    final frac = (percent / scaleMax).clamp(0.0, 1.0);
+    final thrFrac =
+        threshold == null ? null : (threshold! / scaleMax).clamp(0.0, 1.0);
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          height: size,
-          width: size,
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: percent / 100),
-            duration: const Duration(milliseconds: 1300),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, _) {
-              return CustomPaint(
-                painter: _GaugePainter(value, color, p.line),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, color: color, size: 24),
-                      const SizedBox(height: 2),
-                      Text('${(value * 100).round()}%',
-                          style: TextStyle(
-                              fontSize: size * 0.21,
-                              fontWeight: FontWeight.w800,
-                              color: p.ink)),
-                    ],
-                  ),
-                ),
-              );
-            },
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(title.toUpperCase(),
+                style: AppType.label.copyWith(color: muted, letterSpacing: 1.6)),
+            Text('${tier.toUpperCase()} RISK',
+                style: AppType.label.copyWith(color: color)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // The figure. Monospace, so the decimal point holds its column.
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: percent),
+          duration: const Duration(milliseconds: 700),
+          curve: Curves.easeOutCubic,
+          builder: (context, v, _) => Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(v.toStringAsFixed(1),
+                  style: AppType.metric
+                      .copyWith(color: ink, fontSize: onDark ? 46 : 34)),
+              const SizedBox(width: 2),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 3),
+                child: Text('%',
+                    style: AppType.metric.copyWith(
+                        color: muted, fontSize: 18, letterSpacing: 0)),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        Text(title,
-            style: TextStyle(
-                fontWeight: FontWeight.w700, color: p.ink, fontSize: 15)),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-          decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(20)),
-          child: Text('$tier risk',
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.w800, fontSize: 12.5)),
+        const SizedBox(height: 14),
+        // The measure: flat fill, square ends, with the threshold marked.
+        LayoutBuilder(
+          builder: (context, c) {
+            final w = c.maxWidth;
+            return SizedBox(
+              height: 18,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    child: Container(height: 8, color: track),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: frac.toDouble()),
+                      duration: const Duration(milliseconds: 700),
+                      curve: Curves.easeOutCubic,
+                      builder: (_, v, __) =>
+                          Container(height: 8, width: w * v, color: color),
+                    ),
+                  ),
+                  if (thrFrac != null)
+                    Positioned(
+                      left: (w * thrFrac) - 0.5,
+                      top: -3,
+                      child: Container(height: 14, width: 1.5, color: ink),
+                    ),
+                ],
+              ),
+            );
+          },
         ),
+        if (threshold != null) ...[
+          const SizedBox(height: 8),
+          Text('SCREENING CUT-OFF ${threshold!.toStringAsFixed(1)}%',
+              style: AppType.label
+                  .copyWith(color: muted, fontSize: 9, letterSpacing: 0.9)),
+        ],
       ],
     );
   }
-}
-
-class _GaugePainter extends CustomPainter {
-  final double fraction;
-  final Color color;
-  final Color trackColor;
-  _GaugePainter(this.fraction, this.color, this.trackColor);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final radius = size.width / 2 - 9;
-    const start = -math.pi / 2;
-    final track = Paint()
-      ..color = trackColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 14
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(center, radius, track);
-
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final arc = Paint()
-      ..shader = SweepGradient(
-        startAngle: 0,
-        endAngle: 2 * math.pi,
-        colors: [color.withValues(alpha: 0.65), color],
-        transform: const GradientRotation(-math.pi / 2),
-      ).createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 14
-      ..strokeCap = StrokeCap.round;
-    canvas.drawArc(rect, start, 2 * math.pi * fraction.clamp(0.0, 1.0), false, arc);
-  }
-
-  @override
-  bool shouldRepaint(covariant _GaugePainter old) =>
-      old.fraction != fraction ||
-      old.color != color ||
-      old.trackColor != trackColor;
 }

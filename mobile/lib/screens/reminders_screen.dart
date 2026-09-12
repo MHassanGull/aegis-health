@@ -136,7 +136,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 if (!_granted) _permissionBanner(p),
                 Text('Stay healthy on schedule',
                     style: TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.w800, color: p.ink)),
+                        fontSize: 22, fontWeight: FontWeight.w700, color: p.ink)),
                 const SizedBox(height: 4),
                 Text('Gentle repeating notifications — they work even offline.',
                     style: TextStyle(color: p.subtle, fontSize: 13)),
@@ -168,7 +168,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
             color: p.tint(AppTheme.amber),
-            borderRadius: BorderRadius.circular(14)),
+            borderRadius: BorderRadius.circular(AppTheme.radius)),
         child: Row(children: [
           const Icon(Icons.battery_saver_rounded,
               color: AppTheme.amber, size: 20),
@@ -188,7 +188,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
             color: p.tint(AppTheme.amber),
-            borderRadius: BorderRadius.circular(14)),
+            borderRadius: BorderRadius.circular(AppTheme.radius)),
         child: Row(children: [
           const Icon(Icons.notifications_off_rounded, color: AppTheme.amber),
           const SizedBox(width: 12),
@@ -207,17 +207,16 @@ class _RemindersScreenState extends State<RemindersScreen> {
       );
 
   Widget _emptyState(Palette p) => Padding(
-        padding: const EdgeInsets.only(top: 40),
+        padding: const EdgeInsets.only(top: 24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.alarm_add_rounded, size: 64, color: p.line),
-            const SizedBox(height: 14),
-            Text('No reminders yet',
-                style: TextStyle(
-                    color: p.ink, fontWeight: FontWeight.w700, fontSize: 16)),
-            const SizedBox(height: 6),
-            Text('Tap “Add” to create your first one.',
-                style: TextStyle(color: p.subtle)),
+            Text('NONE SET', style: AppType.label.copyWith(color: p.subtle)),
+            const SizedBox(height: 12),
+            Text(
+                'Reminders run on the phone itself, so they still fire with '
+                'no signal. Add one to get started.',
+                style: AppType.body.copyWith(color: p.subtle)),
           ],
         ),
       );
@@ -243,7 +242,7 @@ class _ReminderCard extends StatelessWidget {
             width: 48,
             decoration: BoxDecoration(
                 color: color.withValues(alpha: p.isDark ? 0.28 : 0.14),
-                borderRadius: BorderRadius.circular(14)),
+                borderRadius: BorderRadius.circular(AppTheme.radius)),
             child: Icon(reminderIcon(r.type), color: color),
           ),
           const SizedBox(width: 14),
@@ -317,7 +316,7 @@ class _PresetPicker extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 6, bottom: 8),
                 child: Text('What should we remind you about?',
                     style: TextStyle(
-                        fontWeight: FontWeight.w800, color: p.ink, fontSize: 16)),
+                        fontWeight: FontWeight.w700, color: p.ink, fontSize: 16)),
               ),
               Flexible(
                 child: ListView(
@@ -379,7 +378,7 @@ class _IntervalPicker extends StatelessWidget {
               padding: const EdgeInsets.only(left: 6, bottom: 10),
               child: Text('How often?',
                   style: TextStyle(
-                      fontWeight: FontWeight.w800, color: p.ink, fontSize: 16)),
+                      fontWeight: FontWeight.w700, color: p.ink, fontSize: 16)),
             ),
             Wrap(
               spacing: 10,
@@ -395,7 +394,7 @@ class _IntervalPicker extends StatelessWidget {
                         color: h == defaultHours
                             ? AppTheme.green
                             : p.tint(AppTheme.green),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radius),
                       ),
                       child: Text(label,
                           style: TextStyle(

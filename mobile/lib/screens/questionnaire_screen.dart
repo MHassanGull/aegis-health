@@ -74,59 +74,49 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 6, 20, 4),
+              padding: const EdgeInsets.fromLTRB(
+                  8, 4, AppTheme.gutter, 0),
               child: Row(
                 children: [
                   IconButton(
                       onPressed: _back,
-                      icon: const Icon(Icons.arrow_back_rounded)),
+                      iconSize: 20,
+                      icon: const Icon(Icons.arrow_back)),
                   Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0, end: progress),
-                        duration: const Duration(milliseconds: 350),
-                        builder: (_, v, __) => LinearProgressIndicator(
-                          value: v,
-                          minHeight: 8,
-                          backgroundColor: p.line,
-                          color: AppTheme.green,
-                        ),
-                      ),
+                    child: Row(
+                      children: List.generate(kSteps.length, (k) {
+                        return Expanded(
+                          child: Container(
+                            height: 2,
+                            margin: EdgeInsets.only(
+                                right: k < kSteps.length - 1 ? 4 : 0),
+                            color: k <= _step ? AppTheme.green : p.line,
+                          ),
+                        );
+                      }),
                     ),
                   ),
                   const SizedBox(width: 14),
-                  Text('${_step + 1}/${kSteps.length}',
-                      style: TextStyle(
-                          color: p.subtle, fontWeight: FontWeight.w700)),
+                  Text(
+                      '${(_step + 1).toString().padLeft(2, '0')}'
+                      '/${kSteps.length.toString().padLeft(2, '0')}',
+                      style: AppType.mono.copyWith(color: p.subtle)),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 14, 24, 6),
-              child: Row(
+              padding: const EdgeInsets.fromLTRB(
+                  AppTheme.gutter, 26, AppTheme.gutter, 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                      radius: 26,
-                      backgroundColor: p.tint(AppTheme.green),
-                      child: Icon(step.icon, color: AppTheme.green)),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(step.title,
-                            style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: p.ink)),
-                        Text(step.subtitle,
-                            style: TextStyle(color: p.subtle)),
-                      ],
-                    ),
-                  ),
+                  Text(step.title.toUpperCase(),
+                      style: AppType.label.copyWith(color: AppTheme.green)),
+                  const SizedBox(height: 10),
+                  Text(step.subtitle,
+                      style: AppType.h1.copyWith(color: p.ink)),
                 ],
-              ).animate(key: ValueKey(_step)).fadeIn(duration: 300.ms),
+              ).animate(key: ValueKey(_step)).fadeIn(duration: 220.ms),
             ),
             Expanded(
               child: PageView.builder(
@@ -154,7 +144,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
               child: FilledButton(
                 onPressed: _next,
-                child: Text(last ? 'See My Results' : 'Continue'),
+                child: Text(last ? 'SEE RESULTS' : 'CONTINUE'),
               ),
             ),
           ],
@@ -174,29 +164,25 @@ class _BmiPreview extends StatelessWidget {
     final color = cat == 'Healthy'
         ? AppTheme.low
         : (cat == 'Overweight' ? AppTheme.moderate : AppTheme.high);
-    return Container(
-      margin: const EdgeInsets.only(top: 6),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(18)),
-      child: Row(children: [
-        Icon(Icons.monitor_weight_rounded, color: color, size: 30),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final p = Palette.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Rule(margin: const EdgeInsets.only(bottom: 18)),
+        Text('CALCULATED BMI',
+            style: AppType.label.copyWith(color: p.subtle)),
+        const SizedBox(height: 8),
+        Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              Text('Your BMI (we calculated it)',
-                  style: TextStyle(
-                      color: Palette.of(context).subtle, fontSize: 12.5)),
-              Text('${bmi.toStringAsFixed(1)}  ·  $cat',
-                  style: TextStyle(
-                      color: color, fontWeight: FontWeight.w800, fontSize: 18)),
-            ],
-          ),
-        ),
-      ]),
+              Text(bmi.toStringAsFixed(1),
+                  style: AppType.metric.copyWith(color: p.ink, fontSize: 30)),
+              const SizedBox(width: 12),
+              Text(cat.toUpperCase(),
+                  style: AppType.label.copyWith(color: color)),
+            ]),
+      ],
     );
   }
 }
@@ -211,21 +197,15 @@ class _QuestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = Palette.of(context);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: p.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: p.line),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 26),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(question.label,
-              style: TextStyle(
-                  fontWeight: FontWeight.w700, color: p.ink, fontSize: 15.5)),
-          const SizedBox(height: 14),
+              style: AppType.body
+                  .copyWith(color: p.ink, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 12),
           _input(p),
         ],
       ),
@@ -245,18 +225,20 @@ class _QuestionCard extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => onChanged(c.value),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    height: 50,
+                    duration: const Duration(milliseconds: 140),
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: selected ? AppTheme.green : p.tint(AppTheme.green),
-                      borderRadius: BorderRadius.circular(14),
+                      color: selected ? AppTheme.green : Colors.transparent,
+                      borderRadius: BorderRadius.circular(AppTheme.radius),
+                      border: Border.all(
+                          color: selected ? AppTheme.green : p.line,
+                          width: AppTheme.hair),
                     ),
                     alignment: Alignment.center,
                     child: Text(c.label,
-                        style: TextStyle(
-                            color: selected ? Colors.white : AppTheme.greenDark,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15)),
+                        style: AppType.body.copyWith(
+                            color: selected ? Colors.white : p.ink,
+                            fontWeight: FontWeight.w500)),
                   ),
                 ),
               ),
@@ -268,13 +250,13 @@ class _QuestionCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: p.bg,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppTheme.radius),
           ),
           child: DropdownButton<num>(
             value: value,
             isExpanded: true,
             underline: const SizedBox.shrink(),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppTheme.radius),
             items: question.choices
                 .map((c) =>
                     DropdownMenuItem(value: c.value, child: Text(c.label)))
@@ -300,7 +282,7 @@ class _QuestionCard extends StatelessWidget {
             child: Text(value.round().toString(),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    fontWeight: FontWeight.w800, color: AppTheme.green)),
+                    fontWeight: FontWeight.w700, color: AppTheme.green)),
           ),
         ]);
       case QType.number:
@@ -342,7 +324,7 @@ class _Stepper extends StatelessWidget {
               text: TextSpan(
                 text: value.round().toString(),
                 style: TextStyle(
-                    color: p.ink, fontSize: 30, fontWeight: FontWeight.w800),
+                    color: p.ink, fontSize: 30, fontWeight: FontWeight.w700),
                 children: [
                   TextSpan(
                       text: '  $unit',

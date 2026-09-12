@@ -17,6 +17,13 @@ class _HomeShellState extends State<HomeShell> {
   late int _index = widget.initialIndex;
   final _tabs = const [HomeTab(), ChatScreen(), HistoryTab(), ProfileTab()];
 
+  static const _items = [
+    (Icons.grid_view_outlined, Icons.grid_view_rounded, 'HOME'),
+    (Icons.forum_outlined, Icons.forum_rounded, 'ASSISTANT'),
+    (Icons.show_chart_outlined, Icons.show_chart_rounded, 'HISTORY'),
+    (Icons.person_outline_rounded, Icons.person_rounded, 'PROFILE'),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -28,41 +35,44 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final p = Palette.of(context);
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 260),
-        child: KeyedSubtree(
-          key: ValueKey(_index),
-          child: _tabs[_index],
-        ),
-      ),
+      body: IndexedStack(index: _index, children: _tabs),
+      // A flat bar divided from the page by a single rule. No elevation, no
+      // pill indicator — the active item is stated in ink weight and colour.
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(color: p.card, boxShadow: p.shadow),
-        child: NavigationBar(
-          selectedIndex: _index,
-          onDestinationSelected: (i) => setState(() => _index = i),
-          backgroundColor: p.card,
-          indicatorColor: p.tint(AppTheme.green),
-          height: 68,
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: const [
-            NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded, color: AppTheme.green),
-                label: 'Home'),
-            NavigationDestination(
-                icon: Icon(Icons.chat_bubble_outline_rounded),
-                selectedIcon:
-                    Icon(Icons.chat_bubble_rounded, color: AppTheme.green),
-                label: 'Assistant'),
-            NavigationDestination(
-                icon: Icon(Icons.timeline_outlined),
-                selectedIcon: Icon(Icons.timeline_rounded, color: AppTheme.green),
-                label: 'History'),
-            NavigationDestination(
-                icon: Icon(Icons.person_outline_rounded),
-                selectedIcon: Icon(Icons.person_rounded, color: AppTheme.green),
-                label: 'Profile'),
-          ],
+        decoration: BoxDecoration(
+          color: p.bg,
+          border: Border(top: BorderSide(color: p.line, width: AppTheme.hair)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              children: List.generate(_items.length, (i) {
+                final (iconOff, iconOn, label) = _items[i];
+                final on = i == _index;
+                final color = on ? AppTheme.green : p.subtle;
+                return Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _index = i),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(on ? iconOn : iconOff, size: 21, color: color),
+                        const SizedBox(height: 5),
+                        Text(label,
+                            style: AppType.label.copyWith(
+                                color: color,
+                                fontSize: 9,
+                                fontWeight:
+                                    on ? FontWeight.w700 : FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );

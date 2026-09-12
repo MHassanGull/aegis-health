@@ -233,19 +233,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _avatarPreview(Palette p) {
+    const side = 104.0;
     if (_avatarB64.isNotEmpty) {
-      return CircleAvatar(
-          radius: 52, backgroundImage: MemoryImage(base64Decode(_avatarB64)));
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+        child: Image.memory(base64Decode(_avatarB64),
+            height: side, width: side, fit: BoxFit.cover),
+      );
     }
     final color = UserAvatar.parseColor(_avatarColor);
     final name = ApiClient.instance.username;
     final letter = name.isEmpty ? '?' : name[0].toUpperCase();
-    return CircleAvatar(
-      radius: 52,
-      backgroundColor: color.withValues(alpha: p.isDark ? 0.30 : 0.15),
+    return Container(
+      height: side,
+      width: side,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: p.isDark ? 0.26 : 0.14),
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+      ),
       child: Text(letter,
           style: TextStyle(
-              color: color, fontSize: 40, fontWeight: FontWeight.w800)),
+              fontFamily: AppTheme.sans,
+              color: color,
+              fontSize: 44,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -1)),
     );
   }
 
@@ -255,23 +268,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return GestureDetector(
       onTap: () => setState(() => _avatarColor = hex),
       child: Container(
-        width: 40,
-        height: 40,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
           color: color,
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(AppTheme.radius),
           border: selected
-              ? Border.all(color: AppTheme.green, width: 3)
+              ? Border.all(color: Palette.of(context).ink, width: 2)
               : null,
-          boxShadow: [
-            BoxShadow(
-                color: color.withValues(alpha: 0.4),
-                blurRadius: 8,
-                offset: const Offset(0, 3)),
-          ],
         ),
         child: selected
-            ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
+            ? const Icon(Icons.check, color: Colors.white, size: 18)
             : null,
       ),
     );
@@ -307,7 +314,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
             color: p.tint(AppTheme.green),
-            borderRadius: BorderRadius.circular(12)),
+            borderRadius: BorderRadius.circular(AppTheme.radius)),
         child: Row(children: [
           Icon(icon, size: 18, color: AppTheme.greenDark),
           const SizedBox(width: 6),
@@ -340,7 +347,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: selected ? AppTheme.green : p.tint(AppTheme.green),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppTheme.radius),
           ),
           child: Text(label,
               style: TextStyle(
@@ -360,7 +367,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
           color: p.field,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radius),
           border: Border.all(color: p.line)),
       child: DropdownButton<int>(
         value: _age,

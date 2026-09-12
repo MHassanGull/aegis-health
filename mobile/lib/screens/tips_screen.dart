@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../core/theme.dart';
 
 class _Tip {
@@ -33,47 +32,45 @@ class TipsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = Palette.of(context);
+    // Set as an numbered reference list, not a stack of illustrated cards.
     return Scaffold(
-      appBar: AppBar(title: const Text('Health Tips')),
+      appBar: AppBar(title: const Text('Guidance')),
       body: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+        padding: const EdgeInsets.fromLTRB(
+            AppTheme.gutter, 4, AppTheme.gutter, 32),
         itemCount: _tips.length,
         itemBuilder: (context, i) {
           final t = _tips[i];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: SoftCard(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 48, width: 48,
-                    decoration: BoxDecoration(
-                        color: t.color.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(14)),
-                    child: Icon(t.icon, color: t.color),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(t.title,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: p.ink,
-                                fontSize: 15.5)),
-                        const SizedBox(height: 4),
-                        Text(t.body,
-                            style: TextStyle(
-                                color: p.subtle, height: 1.4, fontSize: 13.5)),
-                      ],
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 30,
+                      child: Text((i + 1).toString().padLeft(2, '0'),
+                          style: AppType.mono.copyWith(color: t.color)),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(t.title, style: AppType.h2.copyWith(color: p.ink)),
+                          const SizedBox(height: 6),
+                          Text(t.body,
+                              style: AppType.small
+                                  .copyWith(color: p.subtle, height: 1.55)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ).animate().fadeIn(delay: (i * 80).ms).moveY(begin: 12, end: 0);
+              if (i < _tips.length - 1) Rule(),
+            ],
+          );
         },
       ),
     );

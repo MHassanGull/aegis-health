@@ -1,26 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/theme.dart';
 import 'login_screen.dart';
 
 class _Slide {
-  final IconData icon;
-  final Color color;
   final String title;
   final String body;
-  const _Slide(this.icon, this.color, this.title, this.body);
+  const _Slide(this.title, this.body);
 }
 
 const _slides = [
-  _Slide(Icons.insights_rounded, AppTheme.green, 'See your future health',
-      'Aegis predicts your risk of diabetes and kidney disease years before it shows up.'),
-  _Slide(Icons.bloodtype_outlined, AppTheme.coral, 'No blood test needed',
-      'Just answer a few simple questions about your lifestyle. That’s it.'),
-  _Slide(Icons.auto_awesome_rounded, AppTheme.amber, 'Know what to change',
-      'Get clear, personalised advice on the habits that lower your risk the most.'),
+  _Slide('Years\nof warning.',
+      'Aegis estimates your risk of diabetes and chronic kidney disease before either one has started.'),
+  _Slide('No needle.\nNo lab.',
+      'Nineteen questions about how you live. Your answers are enough for the model to work with.'),
+  _Slide('What to\nchange first.',
+      'Aegis ranks the habits that matter most for you, and shows how far each one would move your risk.'),
 ];
 
 class OnboardingScreen extends StatefulWidget {
@@ -43,23 +39,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seen_onboarding', true);
     if (!mounted) return;
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()));
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     final last = _page == _slides.length - 1;
     final p = Palette.of(context);
+
     return Scaffold(
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: _finish,
-                child: Text('Skip', style: TextStyle(color: p.subtle)),
+            // Index and skip, set on one baseline against the gutter.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppTheme.gutter, 8, AppTheme.gutter - 8, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                      '${(_page + 1).toString().padLeft(2, '0')} / '
+                      '${_slides.length.toString().padLeft(2, '0')}',
+                      style: AppType.mono
+                          .copyWith(color: p.subtle, letterSpacing: 0.5)),
+                  TextButton(
+                    onPressed: _finish,
+                    child: Text('SKIP',
+                        style: AppType.label.copyWith(color: p.subtle)),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -70,70 +81,60 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 itemBuilder: (context, i) {
                   final s = _slides[i];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.gutter),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          height: 200,
-                          width: 200,
-                          decoration: BoxDecoration(
-                            color: s.color.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(s.icon, size: 96, color: s.color),
-                        ).animate(key: ValueKey(i)).scale(
-                            duration: 500.ms, curve: Curves.easeOutBack),
-                        const SizedBox(height: 48),
                         Text(s.title,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w800,
-                                    color: p.ink))
-                            .animate(key: ValueKey('t$i'))
-                            .fadeIn(duration: 400.ms)
-                            .moveY(begin: 14, end: 0),
-                        const SizedBox(height: 14),
+                            style: AppType.display
+                                .copyWith(color: p.ink, fontSize: 40)),
+                        const SizedBox(height: 28),
+                        SizedBox(
+                            width: 44,
+                            child: Container(height: 2, color: AppTheme.green)),
+                        const SizedBox(height: 28),
                         Text(s.body,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 15.5,
-                                    height: 1.5,
-                                    color: p.subtle))
-                            .animate(key: ValueKey('b$i'))
-                            .fadeIn(delay: 120.ms, duration: 400.ms),
+                            style: AppType.body
+                                .copyWith(color: p.subtle, height: 1.6)),
                       ],
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 10),
-            SmoothPageIndicator(
-              controller: _controller,
-              count: _slides.length,
-              effect: const ExpandingDotsEffect(
-                activeDotColor: AppTheme.green,
-                dotColor: AppTheme.line,
-                dotHeight: 9,
-                dotWidth: 9,
-                expansionFactor: 3,
+            // Progress as filled segments of one rule — a measure, not dots.
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppTheme.gutter),
+              child: Row(
+                children: List.generate(_slides.length, (i) {
+                  return Expanded(
+                    child: Container(
+                      height: 2,
+                      margin: EdgeInsets.only(
+                          right: i < _slides.length - 1 ? 4 : 0),
+                      color: i <= _page ? AppTheme.green : p.line,
+                    ),
+                  );
+                }),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+              padding: const EdgeInsets.fromLTRB(
+                  AppTheme.gutter, 24, AppTheme.gutter, 24),
               child: FilledButton(
                 onPressed: () {
                   if (last) {
                     _finish();
                   } else {
                     _controller.nextPage(
-                        duration: const Duration(milliseconds: 350),
+                        duration: const Duration(milliseconds: 280),
                         curve: Curves.easeOut);
                   }
                 },
-                child: Text(last ? 'Get Started' : 'Next'),
+                child: Text(last ? 'GET STARTED' : 'NEXT'),
               ),
             ),
           ],

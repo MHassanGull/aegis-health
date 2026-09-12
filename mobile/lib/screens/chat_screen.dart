@@ -90,29 +90,36 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
-            child: Row(children: [
-              Container(
-                height: 42, width: 42,
-                decoration: const BoxDecoration(
-                    gradient: AppTheme.heroGradient, shape: BoxShape.circle),
-                child: const Icon(Icons.auto_awesome_rounded,
-                    color: Colors.white, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Aegis Assistant',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: p.ink)),
-                  Text('AI health guide',
-                      style: TextStyle(color: p.subtle, fontSize: 12.5)),
-                ],
-              ),
-            ]),
+            padding: const EdgeInsets.fromLTRB(
+                AppTheme.gutter, 14, AppTheme.gutter, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.green,
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(AppTheme.radius)),
+                    ),
+                    child: const Icon(Icons.forum_rounded,
+                        color: Colors.white, size: 16),
+                  ),
+                  const SizedBox(width: 10),
+                  Text('ASSISTANT',
+                      style: AppType.label
+                          .copyWith(color: p.ink, letterSpacing: 1.6)),
+                  const Spacer(),
+                  Text('CLAUDE',
+                      style: AppType.label
+                          .copyWith(color: p.subtle, fontSize: 9)),
+                ]),
+                const SizedBox(height: 12),
+                Rule(),
+              ],
+            ),
           ),
           Expanded(
             child: _loading
@@ -127,31 +134,34 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _empty(Palette p) {
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(AppTheme.gutter, 24, AppTheme.gutter, 20),
       children: [
-        const SizedBox(height: 20),
-        Icon(Icons.forum_rounded, size: 64, color: p.tint(AppTheme.green)),
-        const SizedBox(height: 14),
-        Text('Ask me anything about your health',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w800, color: p.ink)),
-        const SizedBox(height: 8),
-        Text('I know your latest risk results and can explain them or coach you.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: p.subtle)),
-        const SizedBox(height: 24),
-        ..._suggestions.map((s) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: SoftCard(
-                onTap: () => _send(s),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Row(children: [
-                  const Icon(Icons.bolt_rounded, color: AppTheme.coral, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(s, style: TextStyle(color: p.ink))),
-                ]),
-              ),
+        Text('Ask about\nyour results.',
+            style: AppType.display.copyWith(color: p.ink, fontSize: 28)),
+        const SizedBox(height: 12),
+        Text(
+            'The assistant can see your most recent screening and will '
+            'explain it in plain language.',
+            style: AppType.body.copyWith(color: p.subtle)),
+        const SizedBox(height: 32),
+        const SectionLabel('Try asking'),
+        ..._suggestions.map((s) => Column(
+              children: [
+                InkWell(
+                  onTap: () => _send(s),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    child: Row(children: [
+                      Expanded(
+                          child: Text(s,
+                              style: AppType.body.copyWith(color: p.ink))),
+                      const SizedBox(width: 12),
+                      Icon(Icons.north_east, size: 15, color: p.subtle),
+                    ]),
+                  ),
+                ),
+                Rule(),
+              ],
             )),
       ],
     );
@@ -170,24 +180,22 @@ class _ChatScreenState extends State<ChatScreen> {
           alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 5),
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.78),
+                maxWidth: MediaQuery.of(context).size.width * 0.80),
             decoration: BoxDecoration(
               color: isUser ? AppTheme.green : p.card,
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(18),
-                topRight: const Radius.circular(18),
-                bottomLeft: Radius.circular(isUser ? 18 : 4),
-                bottomRight: Radius.circular(isUser ? 4 : 18),
-              ),
-              boxShadow: isUser ? null : p.shadow,
+              borderRadius:
+                  const BorderRadius.all(Radius.circular(AppTheme.radius)),
+              border: isUser
+                  ? null
+                  : Border.all(color: p.line, width: AppTheme.hair),
             ),
             child: Text(m.text,
-                style: TextStyle(
-                    color: isUser ? Colors.white : p.ink, height: 1.4)),
+                style: AppType.body.copyWith(
+                    color: isUser ? Colors.white : p.ink, height: 1.5)),
           ),
-        ).animate().fadeIn(duration: 250.ms).moveY(begin: 6, end: 0);
+        ).animate().fadeIn(duration: 180.ms);
       },
     );
   }
@@ -200,17 +208,14 @@ class _ChatScreenState extends State<ChatScreen> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
             color: p.card,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: p.shadow),
+            borderRadius:
+                const BorderRadius.all(Radius.circular(AppTheme.radius)),
+            border: Border.all(color: p.line, width: AppTheme.hair)),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           for (var d = 0; d < 3; d++)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: Container(
-                width: 8, height: 8,
-                decoration: const BoxDecoration(
-                    color: AppTheme.green, shape: BoxShape.circle),
-              )
+              child: Container(width: 6, height: 6, color: AppTheme.green)
                   .animate(onPlay: (c) => c.repeat())
                   .fadeIn(duration: 400.ms, delay: (d * 150).ms)
                   .then()
@@ -224,7 +229,10 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _composer(Palette p) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
-      decoration: BoxDecoration(color: p.card, boxShadow: p.shadow),
+      decoration: BoxDecoration(
+          color: p.bg,
+          border:
+              Border(top: BorderSide(color: p.line, width: AppTheme.hair))),
       child: Row(children: [
         Expanded(
           child: TextField(
@@ -245,10 +253,14 @@ class _ChatScreenState extends State<ChatScreen> {
         GestureDetector(
           onTap: () => _send(_input.text),
           child: Container(
-            height: 50, width: 50,
+            height: 48,
+            width: 48,
             decoration: const BoxDecoration(
-                gradient: AppTheme.heroGradient, shape: BoxShape.circle),
-            child: const Icon(Icons.send_rounded, color: Colors.white),
+              color: AppTheme.green,
+              borderRadius: BorderRadius.all(Radius.circular(AppTheme.radius)),
+            ),
+            child: const Icon(Icons.arrow_upward_rounded,
+                color: Colors.white, size: 20),
           ),
         ),
       ]),

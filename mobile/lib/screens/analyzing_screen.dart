@@ -53,65 +53,66 @@ class _AnalyzingScreenState extends State<AnalyzingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _error == null ? _loading() : _errorView(),
+      body: SafeArea(
+        child: Center(
+          child: _error == null ? _loading() : _errorView(),
+        ),
       ),
     );
   }
 
   Widget _loading() {
     final p = Palette.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              height: 150,
-              width: 150,
-              child: CircularProgressIndicator(
-                strokeWidth: 4,
-                valueColor: const AlwaysStoppedAnimation(AppTheme.green),
-                backgroundColor: AppTheme.greenSoft,
-              ),
+    // A determinate-looking bar and a plain statement. A pulsing logo inside a
+    // spinner is theatre; this reads as a machine doing work.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.gutter),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('RUNNING MODEL',
+              style: AppType.label.copyWith(color: AppTheme.green)),
+          const SizedBox(height: 16),
+          Text('Estimating\nyour risk.',
+              style: AppType.display.copyWith(color: p.ink)),
+          const SizedBox(height: 28),
+          SizedBox(
+            height: 3,
+            child: LinearProgressIndicator(
+              backgroundColor: p.line,
+              valueColor: const AlwaysStoppedAnimation(AppTheme.green),
             ),
-            const AnimatedShieldLogo(size: 78)
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .scale(
-                    begin: const Offset(0.92, 0.92),
-                    end: const Offset(1.06, 1.06),
-                    duration: 900.ms,
-                    curve: Curves.easeInOut),
-          ],
-        ),
-        const SizedBox(height: 34),
-        Text('Analysing your health…',
-            style: TextStyle(
-                fontSize: 20, fontWeight: FontWeight.w800, color: p.ink)),
-        const SizedBox(height: 8),
-        Text('Our AI is estimating your risk',
-            style: TextStyle(color: p.subtle)),
-      ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+              'Nineteen inputs through a shared network, then attribution and '
+              'the what-if pass.',
+              style: AppType.small.copyWith(color: p.subtle, height: 1.55)),
+        ],
+      ),
     );
   }
 
   Widget _errorView() {
+    final p = Palette.of(context);
     return Padding(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.gutter),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.cloud_off_rounded, size: 64, color: AppTheme.coral),
-          const SizedBox(height: 18),
-          Text(_error!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: Palette.of(context).ink, fontSize: 15.5)),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Go Back'),
+          Text('COULD NOT COMPLETE',
+              style: AppType.label.copyWith(color: AppTheme.high)),
+          const SizedBox(height: 14),
+          Text(_error!, style: AppType.body.copyWith(color: p.ink)),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('GO BACK'),
+            ),
           ),
         ],
       ),

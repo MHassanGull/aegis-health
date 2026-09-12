@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
@@ -47,34 +46,40 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // A flat brand field with the mark and wordmark set against the page
+    // gutter, the way a title page is set. No gradient, no bounce.
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
-        child: Center(
+      backgroundColor: AppTheme.green,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppTheme.gutter),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AnimatedShieldLogo(size: 110, onDark: true)
-                  .animate()
-                  .scale(duration: 700.ms, curve: Curves.easeOutBack)
-                  .fadeIn(duration: 500.ms),
-              const SizedBox(height: 22),
-              const Text('Aegis Health',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.3))
-                  .animate()
-                  .fadeIn(delay: 350.ms, duration: 600.ms)
-                  .moveY(begin: 12, end: 0),
-              const SizedBox(height: 8),
-              Text('Protect your future health',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 15))
-                  .animate()
-                  .fadeIn(delay: 650.ms, duration: 600.ms),
+              const Spacer(),
+              const ShieldLogo(size: 56, onDark: true),
+              const SizedBox(height: 28),
+              const Text('Aegis',
+                  style: TextStyle(
+                      fontFamily: AppTheme.sans,
+                      color: Colors.white,
+                      fontSize: 46,
+                      height: 1.0,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -1.8)),
+              const SizedBox(height: 10),
+              Text('PREVENTIVE HEALTH SCREENING',
+                  style: AppType.label.copyWith(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      letterSpacing: 1.8)),
+              const Spacer(),
+              Container(
+                  height: AppTheme.hair,
+                  color: Colors.white.withValues(alpha: 0.25)),
+              const SizedBox(height: 14),
+              Text('DIABETES  ·  KIDNEY DISEASE',
+                  style: AppType.label.copyWith(
+                      color: Colors.white.withValues(alpha: 0.6))),
             ],
           ),
         ),

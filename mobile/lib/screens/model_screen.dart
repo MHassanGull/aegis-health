@@ -92,37 +92,29 @@ class _Content extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
         // ---- architecture hero -------------------------------------------
-        Container(
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-          decoration: BoxDecoration(
-            gradient: AppTheme.heroGradient,
-            borderRadius: BorderRadius.circular(26),
-            boxShadow: [
-              BoxShadow(
-                  color: AppTheme.green.withValues(alpha: 0.30),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10)),
-            ],
-          ),
+        BrandBlock(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                const Icon(Icons.hub_rounded, color: Colors.white, size: 22),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(arch['type'] as String,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800)),
-                ),
-              ]),
-              const SizedBox(height: 4),
+              Text('ARCHITECTURE',
+                  style: AppType.label.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      letterSpacing: 1.6)),
+              const SizedBox(height: 12),
+              Text(arch['type'] as String,
+                  style: const TextStyle(
+                      fontFamily: AppTheme.sans,
+                      color: Colors.white,
+                      fontSize: 20,
+                      height: 1.2,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5)),
+              const SizedBox(height: 6),
               Text(arch['framework'] as String,
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 12.5)),
+                  style: AppType.mono.copyWith(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 12)),
               const SizedBox(height: 16),
               SizedBox(
                 height: 170,
@@ -186,7 +178,7 @@ class _Content extends StatelessWidget {
             children: [
               Text('ROC-AUC vs Recall',
                   style:
-                      TextStyle(fontWeight: FontWeight.w800, color: p.ink)),
+                      TextStyle(fontWeight: FontWeight.w700, color: p.ink)),
               const SizedBox(height: 4),
               Text('Higher is better · both diseases',
                   style: TextStyle(color: p.subtle, fontSize: 12)),
@@ -230,7 +222,7 @@ class _Content extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
               color: p.tint(AppTheme.green),
-              borderRadius: BorderRadius.circular(14)),
+              borderRadius: BorderRadius.circular(AppTheme.radius)),
           child: Row(children: [
             const Icon(Icons.info_outline_rounded,
                 color: AppTheme.green, size: 20),
@@ -253,7 +245,7 @@ class _Content extends StatelessWidget {
           Text(value,
               style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   fontSize: 16)),
           Text(label,
               style: TextStyle(
@@ -397,7 +389,7 @@ class _LoadingSkeleton extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 14),
           decoration: BoxDecoration(
               color: p.isDark ? const Color(0xFF243029) : const Color(0xFFEDF1EE),
-              borderRadius: BorderRadius.circular(20)),
+              borderRadius: BorderRadius.circular(AppTheme.radius)),
         );
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -437,7 +429,7 @@ class _AccuracyHeadline extends StatelessWidget {
             const Icon(Icons.verified_rounded, color: AppTheme.green, size: 20),
             const SizedBox(width: 8),
             Text('Overall accuracy',
-                style: TextStyle(fontWeight: FontWeight.w800, color: p.ink)),
+                style: TextStyle(fontWeight: FontWeight.w700, color: p.ink)),
           ]),
           const SizedBox(height: 10),
           Center(
@@ -448,7 +440,7 @@ class _AccuracyHeadline extends StatelessWidget {
               builder: (_, v, __) => Text('${v.toStringAsFixed(1)}%',
                   style: const TextStyle(
                       fontSize: 46,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.green,
                       height: 1.0)),
             ),
@@ -478,11 +470,11 @@ class _AccuracyHeadline extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
             color: color.withValues(alpha: p.isDark ? 0.22 : 0.12),
-            borderRadius: BorderRadius.circular(14)),
+            borderRadius: BorderRadius.circular(AppTheme.radius)),
         child: Column(children: [
           Text('${(frac * 100).toStringAsFixed(1)}%',
               style: TextStyle(
-                  color: color, fontWeight: FontWeight.w800, fontSize: 18)),
+                  color: color, fontWeight: FontWeight.w700, fontSize: 18)),
           Text(label, style: TextStyle(color: p.subtle, fontSize: 12)),
         ]),
       );
@@ -491,7 +483,7 @@ class _AccuracyHeadline extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
             color: p.tint(AppTheme.green),
-            borderRadius: BorderRadius.circular(20)),
+            borderRadius: BorderRadius.circular(AppTheme.radius)),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, size: 14, color: AppTheme.greenDark),
           const SizedBox(width: 5),
@@ -519,7 +511,7 @@ class _DatasetCard extends StatelessWidget {
             width: 54,
             decoration: BoxDecoration(
                 color: p.tint(AppTheme.green),
-                borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(AppTheme.radius)),
             child: const Icon(Icons.dataset_rounded,
                 color: AppTheme.green, size: 26),
           ),
@@ -536,7 +528,7 @@ class _DatasetCard extends StatelessWidget {
                     '${_Content._fmt(v.round())} people',
                     style: TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: p.ink),
                   ),
                 ),
@@ -572,21 +564,17 @@ class _PerfCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            CircleAvatar(
-                radius: 18,
-                backgroundColor: color.withValues(alpha: 0.15),
-                child: Icon(icon, color: color, size: 20)),
-            const SizedBox(width: 12),
+            Container(width: 10, height: 10, color: color),
+            const SizedBox(width: 10),
             Text(m['name'] as String,
-                style: TextStyle(
-                    fontWeight: FontWeight.w800, color: p.ink, fontSize: 16)),
+                style: AppType.h2.copyWith(color: p.ink)),
             const Spacer(),
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                   color: p.tint(color),
-                  borderRadius: BorderRadius.circular(20)),
+                  borderRadius: BorderRadius.circular(AppTheme.radius)),
               child: Text('${m['prevalence']}% have it',
                   style: TextStyle(
                       color: p.ink,
@@ -611,11 +599,11 @@ class _PerfCard extends StatelessWidget {
           Text(label, style: TextStyle(color: p.ink, fontSize: 13)),
           Text(v.toStringAsFixed(2),
               style: TextStyle(
-                  color: color, fontWeight: FontWeight.w800, fontSize: 13)),
+                  color: color, fontWeight: FontWeight.w700, fontSize: 13)),
         ]),
         const SizedBox(height: 6),
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radius),
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: v),
             duration: const Duration(milliseconds: 1000),
@@ -726,7 +714,7 @@ class _ConfusionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(m['name'] as String,
-              style: TextStyle(fontWeight: FontWeight.w800, color: p.ink)),
+              style: TextStyle(fontWeight: FontWeight.w700, color: p.ink)),
           const SizedBox(height: 12),
           Row(children: [
             const SizedBox(width: 74),
@@ -756,7 +744,7 @@ class _ConfusionCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
                 color: p.tint(AppTheme.green),
-                borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(AppTheme.radius)),
             child: Text(
                 'Caught ${_Content._fmt(caught)} of ${_Content._fmt(total)} real '
                 'cases ($recallPct% recall). It leans toward caution — a false '
@@ -783,12 +771,12 @@ class _ConfusionCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
             color: color.withValues(alpha: p.isDark ? 0.22 : 0.12),
-            borderRadius: BorderRadius.circular(12)),
+            borderRadius: BorderRadius.circular(AppTheme.radius)),
         child: Column(children: [
           Text(_Content._fmt(int.parse(value)),
               style: TextStyle(
                   color: color == p.subtle ? p.ink : color,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   fontSize: 15)),
           Text(tag, style: TextStyle(color: p.subtle, fontSize: 10.5)),
         ]),
@@ -805,7 +793,7 @@ class _WhyRecallCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
           color: p.tint(AppTheme.amber),
-          borderRadius: BorderRadius.circular(20)),
+          borderRadius: BorderRadius.circular(AppTheme.radius)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -814,7 +802,7 @@ class _WhyRecallCard extends StatelessWidget {
             const SizedBox(width: 8),
             Text('Why Recall, not Accuracy?',
                 style: TextStyle(
-                    fontWeight: FontWeight.w800, color: p.ink, fontSize: 15)),
+                    fontWeight: FontWeight.w700, color: p.ink, fontSize: 15)),
           ]),
           const SizedBox(height: 10),
           Text(
@@ -843,19 +831,14 @@ class _MethodTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 14,
-            backgroundColor: p.tint(AppTheme.green),
-            child: Text('$n',
-                style: const TextStyle(
-                    color: AppTheme.greenDark,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13)),
+          SizedBox(
+            width: 26,
+            child: Text(n.toString().padLeft(2, '0'),
+                style: AppType.mono.copyWith(color: AppTheme.green)),
           ),
-          const SizedBox(width: 12),
           Expanded(
               child: Text(text,
-                  style: TextStyle(color: p.ink, fontSize: 13.5, height: 1.45))),
+                  style: AppType.small.copyWith(color: p.ink, height: 1.55))),
         ],
       ),
     );
@@ -875,7 +858,7 @@ class _SectionTitle extends StatelessWidget {
       const SizedBox(width: 8),
       Text(text,
           style: TextStyle(
-              fontSize: 18, fontWeight: FontWeight.w800, color: p.ink)),
+              fontSize: 18, fontWeight: FontWeight.w700, color: p.ink)),
     ]);
   }
 }

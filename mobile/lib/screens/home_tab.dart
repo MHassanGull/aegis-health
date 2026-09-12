@@ -1,315 +1,505 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../core/api_client.dart';
 import '../core/links.dart';
+import '../core/motion.dart';
 import '../core/theme.dart';
+import '../widgets/shield_logo.dart';
 import '../widgets/user_avatar.dart';
 import 'questionnaire_screen.dart';
 import 'edit_profile_screen.dart';
 import 'tips_screen.dart';
 import 'model_screen.dart';
 import 'reminders_screen.dart';
+import 'result_screen.dart';
 
-class HomeTab extends StatelessWidget {
+class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
+  @override
+  State<HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<HomeTab> {
+  late Future<List<dynamic>> _history;
+
+  @override
+  void initState() {
+    super.initState();
+    _history = ApiClient.instance.history().catchError((_) => <dynamic>[]);
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = Palette.of(context);
     final name = _cap(ApiClient.instance.username);
+
+    // Sections manage their own gutters so colour fields can run edge to edge.
     return SafeArea(
+      bottom: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        padding: EdgeInsets.zero,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Hello,',
-                      style: TextStyle(color: p.subtle, fontSize: 15)),
-                  Text(name,
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: p.ink)),
-                ],
-              ),
-              GestureDetector(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const EditProfileScreen())),
-                child: const UserAvatar(radius: 24),
-              ),
-            ],
-          ).animate().fadeIn(duration: 350.ms),
-          const SizedBox(height: 22),
-          const _HeroCard().animate().fadeIn(delay: 100.ms).moveY(begin: 16, end: 0),
-          const SizedBox(height: 18),
-          Row(children: [
-            Expanded(
-              child: _ActionTile(
-                icon: Icons.location_on_rounded,
-                color: AppTheme.coral,
-                title: 'Find Doctors',
-                subtitle: 'Clinics near you',
-                onTap: openDoctorsNearby,
-              ),
+          _Masthead(),
+          const SizedBox(height: 30),
+
+          // ---- Name, set at poster scale ----------------------------------
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.gutter),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wipe(
+                  delay: const Duration(milliseconds: 120),
+                  child: Text(name.toUpperCase(),
+                      style: AppType.poster.copyWith(color: p.ink)),
+                ),
+                const SizedBox(height: 14),
+                Row(children: [
+                  Wipe(
+                    delay: const Duration(milliseconds: 460),
+                    duration: Motion.base,
+                    child:
+                        Container(width: 28, height: 3, color: AppTheme.coral),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Rise(
+                      delay: const Duration(milliseconds: 520),
+                      distance: 8,
+                      child: Text(
+                          'Risk is not fixed. Measure it, then move it.',
+                          style: AppType.small.copyWith(color: p.subtle)),
+                    ),
+                  ),
+                ]),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ActionTile(
-                icon: Icons.menu_book_rounded,
-                color: AppTheme.amber,
-                title: 'Health Tips',
-                subtitle: 'Stay healthy',
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const TipsScreen())),
-              ),
+          ),
+          const SizedBox(height: 28),
+
+          // ---- Full-bleed green field: the one action -----------------------
+          const Rise(
+              delay: Duration(milliseconds: 300),
+              distance: 26,
+              child: _CheckField()),
+
+          // ---- Dark data band: last reading --------------------------------
+          FutureBuilder<List<dynamic>>(
+            future: _history,
+            builder: (context, snap) {
+              final items = (snap.data ?? []).cast<Map<String, dynamic>>();
+              if (items.isEmpty) return const SizedBox(height: 30);
+              return _LastReadingBand(items.first);
+            },
+          ),
+
+          // ---- Tools --------------------------------------------------------
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.gutter),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _HeavyLabel('Tools'),
+                _ToolRow(
+                  index: 1,
+                  n: '01',
+                  icon: Icons.notifications_none_rounded,
+                  title: 'Health reminders',
+                  meta: 'Water, meals, movement, medicine',
+                  accent: AppTheme.coral,
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const RemindersScreen())),
+                ),
+                _ToolRow(
+                  index: 2,
+                  n: '02',
+                  icon: Icons.account_tree_outlined,
+                  title: 'Under the hood',
+                  meta: 'The network, the data, the scores',
+                  accent: AppTheme.green,
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const ModelScreen())),
+                ),
+                _ToolRow(
+                  index: 3,
+                  n: '03',
+                  icon: Icons.menu_book_outlined,
+                  title: 'Health guidance',
+                  meta: 'Reading on both conditions',
+                  accent: AppTheme.amber,
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const TipsScreen())),
+                ),
+                _ToolRow(
+                  index: 4,
+                  n: '04',
+                  icon: Icons.place_outlined,
+                  title: 'Clinics nearby',
+                  meta: 'Opens in Maps',
+                  accent: AppTheme.high,
+                  onTap: openDoctorsNearby,
+                  last: true,
+                ),
+              ],
             ),
-          ]),
-          const SizedBox(height: 18),
-          const _RemindersBanner().animate().fadeIn(delay: 130.ms),
-          const SizedBox(height: 12),
-          const _ModelBanner().animate().fadeIn(delay: 180.ms),
-          const SizedBox(height: 22),
-          Text('How it works',
-              style: TextStyle(
-                  fontSize: 17, fontWeight: FontWeight.w800, color: p.ink)),
-          const SizedBox(height: 12),
-          const Row(children: [
-            Expanded(child: _StepMini(Icons.edit_note_rounded, '1. Answer', 'A few quick questions')),
-            SizedBox(width: 12),
-            Expanded(child: _StepMini(Icons.psychology_rounded, '2. Analyse', 'AI checks your risk')),
-            SizedBox(width: 12),
-            Expanded(child: _StepMini(Icons.shield_moon_rounded, '3. Protect', 'See what to change')),
-          ]),
-          const SizedBox(height: 22),
-          _TipCard(p),
+          ),
+          const SizedBox(height: 36),
+
+          // ---- Colophon: inverted footer, edge to edge ----------------------
+          Container(
+            width: double.infinity,
+            color: p.isDark ? AppTheme.panelDark : AppTheme.panel,
+            padding: const EdgeInsets.fromLTRB(
+                AppTheme.gutter, 28, AppTheme.gutter, 36),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('TRAINED ON',
+                    style: AppType.label.copyWith(
+                        color: Colors.white.withValues(alpha: 0.45))),
+                const SizedBox(height: 10),
+                Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: 253155),
+                        duration: const Duration(milliseconds: 1100),
+                        curve: Motion.ease,
+                        builder: (_, v, __) => Text(_grouped(v.round()),
+                            style: AppType.figure
+                                .copyWith(color: Colors.white, fontSize: 40)),
+                      ),
+                      const SizedBox(width: 10),
+                      Text('PEOPLE',
+                          style: AppType.label.copyWith(
+                              color: AppTheme.green, letterSpacing: 1.4)),
+                    ]),
+                const SizedBox(height: 18),
+                Text(
+                    'CDC Behavioral Risk Factor Surveillance System, 2015. '
+                    'Aegis is an educational screening aid — it does not '
+                    'diagnose, and it does not replace a clinician.',
+                    style: AppType.small.copyWith(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        fontSize: 12,
+                        height: 1.6)),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
   String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
-}
 
-class _HeroCard extends StatelessWidget {
-  const _HeroCard();
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: AppTheme.heroGradient,
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: [
-          BoxShadow(
-              color: AppTheme.green.withValues(alpha: 0.30),
-              blurRadius: 24,
-              offset: const Offset(0, 10)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Your health check',
-              style: TextStyle(
-                  color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
-          Text(
-              'Find your future risk of diabetes & kidney disease — no blood test, 2 minutes.',
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.92), height: 1.45)),
-          const SizedBox(height: 18),
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppTheme.greenDark,
-              minimumSize: const Size.fromHeight(52),
-            ),
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const QuestionnaireScreen()));
-            },
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Start Health Check'),
-          ),
-        ],
-      ),
-    );
+  static String _grouped(int n) {
+    final d = n.toString();
+    final b = StringBuffer();
+    for (var i = 0; i < d.length; i++) {
+      if (i > 0 && (d.length - i) % 3 == 0) b.write(',');
+      b.write(d[i]);
+    }
+    return b.toString();
   }
 }
 
-class _RemindersBanner extends StatelessWidget {
-  const _RemindersBanner();
+class _Masthead extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = Palette.of(context);
-    return SoftCard(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => const RemindersScreen())),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            height: 50,
-            width: 50,
-            decoration: BoxDecoration(
-                gradient: AppTheme.coralGradient,
-                borderRadius: BorderRadius.circular(15)),
-            child: const Icon(Icons.notifications_active_rounded,
-                color: Colors.white),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(AppTheme.gutter, 10, AppTheme.gutter, 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(children: [
+                const ShieldLogo(size: 18),
+                const SizedBox(width: 8),
+                Text('AEGIS',
+                    style: AppType.label
+                        .copyWith(color: p.ink, letterSpacing: 2.4)),
+              ]),
+              GestureDetector(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const EditProfileScreen())),
+                child: const UserAvatar(radius: 16),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Health Reminders',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: p.ink,
-                        fontSize: 15)),
-                const SizedBox(height: 2),
-                Text('Water, meals, movement, meds — never forget',
-                    style: TextStyle(color: p.subtle, fontSize: 12.5)),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, color: p.subtle),
-        ],
-      ),
-    );
-  }
-}
-
-class _ModelBanner extends StatelessWidget {
-  const _ModelBanner();
-  @override
-  Widget build(BuildContext context) {
-    final p = Palette.of(context);
-    return SoftCard(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => const ModelScreen())),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            height: 50,
-            width: 50,
-            decoration: BoxDecoration(
-                gradient: AppTheme.heroGradient,
-                borderRadius: BorderRadius.circular(15)),
-            child: const Icon(Icons.hub_rounded, color: Colors.white),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Under the Hood',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: p.ink,
-                        fontSize: 15)),
-                const SizedBox(height: 2),
-                Text('See the neural network, dataset & accuracy',
-                    style: TextStyle(color: p.subtle, fontSize: 12.5)),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, color: p.subtle),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionTile extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  const _ActionTile(
-      {required this.icon,
-      required this.color,
-      required this.title,
-      required this.subtitle,
-      required this.onTap});
-  @override
-  Widget build(BuildContext context) {
-    final p = Palette.of(context);
-    return SoftCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-              radius: 20,
-              backgroundColor: color.withValues(alpha: 0.14),
-              child: Icon(icon, color: color, size: 22)),
-          const SizedBox(height: 12),
-          Text(title,
-              style: TextStyle(fontWeight: FontWeight.w700, color: p.ink)),
-          Text(subtitle,
-              style: TextStyle(color: p.subtle, fontSize: 12.5)),
-        ],
-      ),
-    );
-  }
-}
-
-class _StepMini extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String body;
-  const _StepMini(this.icon, this.title, this.body);
-  @override
-  Widget build(BuildContext context) {
-    final p = Palette.of(context);
-    return SoftCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: AppTheme.green, size: 24),
-          const SizedBox(height: 10),
-          Text(title,
-              style: TextStyle(
-                  fontWeight: FontWeight.w700, color: p.ink, fontSize: 13)),
-          const SizedBox(height: 2),
-          Text(body, style: TextStyle(color: p.subtle, fontSize: 11)),
-        ],
-      ),
-    );
-  }
-}
-
-class _TipCard extends StatelessWidget {
-  final Palette p;
-  const _TipCard(this.p);
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-          color: p.tint(AppTheme.coral),
-          borderRadius: BorderRadius.circular(20)),
-      child: Row(children: [
-        const Icon(Icons.lightbulb_rounded, color: AppTheme.coral),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-              'Tip: 30 minutes of walking a day can measurably lower your diabetes risk.',
-              style: TextStyle(color: p.ink, fontSize: 13.5, height: 1.4)),
         ),
-      ]),
+        // A heavy rule under the masthead states where the page begins.
+        Container(height: AppTheme.heavy, color: p.ink),
+      ],
+    );
+  }
+}
+
+/// The primary action as a full-bleed colour field. Running to the screen
+/// edges is what makes it read as a poster panel rather than a card.
+class _CheckField extends StatelessWidget {
+  const _CheckField();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+            child: ColoredBox(
+                color: AppTheme.green, child: const Halftone())),
+        Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(
+          AppTheme.gutter, 26, AppTheme.gutter, 26),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Text('HEALTH CHECK',
+                style: AppType.label.copyWith(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    letterSpacing: 2)),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Container(
+                    height: AppTheme.hair,
+                    color: Colors.white.withValues(alpha: 0.35))),
+          ]),
+          const SizedBox(height: 20),
+          const Text('DIABETES\n& KIDNEY\nRISK.',
+              style: TextStyle(
+                  fontFamily: AppTheme.sans,
+                  color: Colors.white,
+                  fontSize: 42,
+                  height: 0.98,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -1.8)),
+          const SizedBox(height: 22),
+          Row(children: [
+            _spec('19', 'QUESTIONS'),
+            const SizedBox(width: 26),
+            _spec('2', 'MINUTES'),
+            const SizedBox(width: 26),
+            _spec('0', 'BLOOD TESTS'),
+          ]),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppTheme.greenDark,
+                minimumSize: const Size.fromHeight(52),
+              ),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const QuestionnaireScreen()));
+              },
+              child: const Text('BEGIN CHECK'),
+            ),
+          ),
+        ],
+      ),
+        ),
+      ],
+    );
+  }
+
+  Widget _spec(String value, String label) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(value,
+              style: const TextStyle(
+                  fontFamily: AppTheme.mono,
+                  color: Colors.white,
+                  fontSize: 26,
+                  height: 1,
+                  fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          Text(label,
+              style: AppType.label.copyWith(
+                  color: Colors.white.withValues(alpha: 0.7), fontSize: 9)),
+        ],
+      );
+}
+
+/// The most recent reading on a near-black band: the app's hardest contrast,
+/// reserved for the numbers that matter most.
+class _LastReadingBand extends StatelessWidget {
+  final Map<String, dynamic> a;
+  const _LastReadingBand(this.a);
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    final dia = ((a['diabetes_risk'] as num) * 100).toDouble();
+    final kid = ((a['kidney_risk'] as num) * 100).toDouble();
+
+    return Container(
+      width: double.infinity,
+      color: p.isDark ? AppTheme.panelDark : AppTheme.panel,
+      padding: const EdgeInsets.fromLTRB(
+          AppTheme.gutter, 22, AppTheme.gutter, 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Text('LAST READING',
+                style: AppType.label.copyWith(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    letterSpacing: 2)),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => ResultScreen(
+                          result: a['result'] as Map<String, dynamic>))),
+              child: Row(children: [
+                Text('OPEN',
+                    style: AppType.label.copyWith(color: AppTheme.green)),
+                const SizedBox(width: 6),
+                const Icon(Icons.arrow_forward,
+                    size: 13, color: AppTheme.green),
+              ]),
+            ),
+          ]),
+          const SizedBox(height: 18),
+          Row(children: [
+            _reading('DIABETES', dia, AppTheme.green),
+            const SizedBox(width: 34),
+            _reading('KIDNEY', kid, AppTheme.coral),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _reading(String label, double v, Color color) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                CountUp(v,
+                    style: AppType.figure
+                        .copyWith(color: Colors.white, fontSize: 38)),
+                Text('%',
+                    style: AppType.mono.copyWith(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 14)),
+              ]),
+          const SizedBox(height: 6),
+          Row(children: [
+            Container(width: 8, height: 8, color: color),
+            const SizedBox(width: 6),
+            Text(label,
+                style: AppType.label.copyWith(
+                    color: Colors.white.withValues(alpha: 0.6), fontSize: 9)),
+          ]),
+        ],
+      );
+}
+
+/// Section label carried on a heavy rule rather than a hairline.
+class _HeavyLabel extends StatelessWidget {
+  final String text;
+  const _HeavyLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 30, bottom: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(text.toUpperCase(),
+              style: AppType.label
+                  .copyWith(color: p.ink, letterSpacing: 2, fontSize: 11)),
+          const SizedBox(height: 10),
+          Container(height: 2, color: p.ink),
+        ],
+      ),
+    );
+  }
+}
+
+/// A tool entry: index numeral, title block, accent tick. The numeral is the
+/// graphic element that gives the list rhythm.
+class _ToolRow extends StatelessWidget {
+  final int index;
+  final String n;
+  final IconData icon;
+  final String title;
+  final String meta;
+  final Color accent;
+  final VoidCallback onTap;
+  final bool last;
+  const _ToolRow({
+    required this.index,
+    required this.n,
+    required this.icon,
+    required this.title,
+    required this.meta,
+    required this.accent,
+    required this.onTap,
+    this.last = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    return Rise(
+      delay: Duration(milliseconds: 560 + index * 80),
+      distance: 14,
+      child: Column(
+      children: [
+        Press(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 34,
+                  child: Text(n,
+                      style: AppType.mono
+                          .copyWith(color: accent, fontSize: 15)),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: AppType.h2
+                              .copyWith(color: p.ink, fontSize: 17)),
+                      const SizedBox(height: 3),
+                      Text(meta,
+                          style: AppType.small
+                              .copyWith(color: p.subtle, fontSize: 12.5)),
+                    ],
+                  ),
+                ),
+                Icon(icon, size: 18, color: p.subtle),
+              ],
+            ),
+          ),
+        ),
+        if (!last) Rule(),
+      ],
+      ),
     );
   }
 }

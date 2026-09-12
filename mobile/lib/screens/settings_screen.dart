@@ -26,7 +26,7 @@ class SettingsScreen extends StatelessWidget {
                 height: 44, width: 44,
                 decoration: BoxDecoration(
                     color: p.tint(AppTheme.green),
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(AppTheme.radius)),
                 child: const Icon(Icons.dark_mode_rounded, color: AppTheme.green),
               ),
               const SizedBox(width: 14),
@@ -59,7 +59,7 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
                 color: p.tint(AppTheme.coral),
-                borderRadius: BorderRadius.circular(18)),
+                borderRadius: BorderRadius.circular(AppTheme.radius)),
             child: Row(children: [
               const Icon(Icons.health_and_safety_rounded, color: AppTheme.coral),
               const SizedBox(width: 12),
@@ -77,7 +77,7 @@ class SettingsScreen extends StatelessWidget {
               minimumSize: const Size.fromHeight(54),
               side: BorderSide(color: p.tint(AppTheme.coral)),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(AppTheme.radius)),
             ),
             onPressed: () async {
               await context.read<AuthState>().logout();
@@ -112,7 +112,7 @@ class SettingsScreen extends StatelessWidget {
           height: 44, width: 44,
           decoration: BoxDecoration(
               color: p.tint(AppTheme.green),
-              borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(AppTheme.radius)),
           child: Icon(icon, color: AppTheme.green),
         ),
         const SizedBox(width: 14),
@@ -150,7 +150,7 @@ class _ServerConnectionTileState extends State<_ServerConnectionTile> {
           height: 44, width: 44,
           decoration: BoxDecoration(
               color: p.tint(AppTheme.green),
-              borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(AppTheme.radius)),
           child: const Icon(Icons.dns_rounded, color: AppTheme.green),
         ),
         const SizedBox(width: 14),

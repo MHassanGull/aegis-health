@@ -62,118 +62,138 @@ class _WhatIfScreenState extends State<WhatIfScreen> {
   Widget build(BuildContext context) {
     final p = Palette.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('What-If Simulator')),
+      appBar: AppBar(title: const Text('What-if')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),
+        padding: const EdgeInsets.fromLTRB(
+            AppTheme.gutter, 4, AppTheme.gutter, 32),
         children: [
-          Text('Change a habit and watch your risk move.',
-              style: TextStyle(color: p.subtle)),
-          const SizedBox(height: 16),
-          SoftCard(
-            padding: const EdgeInsets.symmetric(vertical: 22),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    RiskGauge(
-                        title: 'Diabetes',
-                        percent: _diabetes,
-                        tier: _diaTier,
-                        icon: Icons.water_drop_rounded,
-                        size: 116),
-                    RiskGauge(
-                        title: 'Kidney',
-                        percent: _kidney,
-                        tier: _kidTier,
-                        icon: Icons.spa_rounded,
-                        size: 116),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                _delta(p),
-              ],
-            ),
-          ),
-          const SizedBox(height: 22),
-          Text('Try changing these',
-              style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w800, color: p.ink)),
-          const SizedBox(height: 10),
-          _toggle(p, 'Become physically active', 'PhysActivity', 1, 0),
-          _toggle(p, 'Quit smoking', 'Smoker', 0, 1),
-          _toggle(p, 'Eat fruit daily', 'Fruits', 1, 0),
-          _toggle(p, 'Eat vegetables daily', 'Veggies', 1, 0),
-          _toggle(p, 'Cut heavy drinking', 'HvyAlcoholConsump', 0, 1),
-          const SizedBox(height: 8),
+          Text(
+              'Change a habit below. The model re-runs and the readouts move '
+              'with it.',
+              style: AppType.small.copyWith(color: p.subtle, height: 1.55)),
+          const SizedBox(height: 28),
+          const SectionLabel('Projected risk'),
+          RiskGauge(title: 'Diabetes', percent: _diabetes, tier: _diaTier),
+          const SizedBox(height: 24),
+          RiskGauge(
+              title: 'Chronic kidney disease',
+              percent: _kidney,
+              tier: _kidTier),
+          const SizedBox(height: 20),
+          _delta(p),
+          const SizedBox(height: 34),
+          const SectionLabel('Habits'),
+          _toggle(p, 'Physically active', 'PhysActivity', 1, 0),
+          _toggle(p, 'Not smoking', 'Smoker', 0, 1),
+          _toggle(p, 'Fruit most days', 'Fruits', 1, 0),
+          _toggle(p, 'Vegetables most days', 'Veggies', 1, 0),
+          _toggle(p, 'No heavy drinking', 'HvyAlcoholConsump', 0, 1),
+          const SizedBox(height: 26),
+          const SectionLabel('Body mass index'),
           _bmiSlider(p),
         ],
       ),
     );
   }
 
+  /// The change from the baseline, stated as a signed figure per condition.
   Widget _delta(Palette p) {
     final dDia = _diabetes - _baseDia;
     final dKid = _kidney - _baseKid;
-    String fmt(double d) => '${d > 0 ? '+' : ''}${d.toStringAsFixed(1)}%';
+    String fmt(double d) =>
+        '${d > 0 ? '+' : d < 0 ? '−' : ''}${d.abs().toStringAsFixed(1)}%';
     Color col(double d) =>
         d < -0.05 ? AppTheme.low : (d > 0.05 ? AppTheme.high : p.subtle);
+
     if (_busy) {
-      return Text('Updating…', style: TextStyle(color: p.subtle));
+      return Text('RECALCULATING',
+          style: AppType.label.copyWith(color: p.subtle));
     }
-    return Wrap(spacing: 18, children: [
-      Text('Diabetes ${fmt(dDia)}',
-          style: TextStyle(color: col(dDia), fontWeight: FontWeight.w700)),
-      Text('Kidney ${fmt(dKid)}',
-          style: TextStyle(color: col(dKid), fontWeight: FontWeight.w700)),
+    return Row(children: [
+      _deltaCell(p, 'Diabetes', fmt(dDia), col(dDia)),
+      const SizedBox(width: 32),
+      _deltaCell(p, 'Kidney', fmt(dKid), col(dKid)),
     ]);
   }
 
+  Widget _deltaCell(Palette p, String label, String value, Color color) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${label.toUpperCase()} CHANGE',
+              style: AppType.label.copyWith(color: p.subtle, fontSize: 9)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: AppType.mono.copyWith(
+                  color: color, fontSize: 17, fontWeight: FontWeight.w500)),
+        ],
+      );
+
+  /// One habit per row, divided by a rule. No card per switch.
   Widget _toggle(Palette p, String label, String key, num good, num bad) {
     final isGood = _p[key] == good;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: SoftCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Row(children: [
+    return Column(
+      children: [
+        Row(children: [
           Expanded(
-              child: Text(label,
-                  style: TextStyle(color: p.ink, fontWeight: FontWeight.w600))),
+              child: Text(label, style: AppType.body.copyWith(color: p.ink))),
           Switch(
             value: isGood,
+            activeThumbColor: Colors.white,
             activeTrackColor: AppTheme.green,
+            inactiveTrackColor: p.line,
+            trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
             onChanged: (v) => _change(key, v ? good : bad),
           ),
         ]),
-      ),
+        Rule(),
+      ],
     );
   }
 
   Widget _bmiSlider(Palette p) {
     final bmi = (_p['BMI'] ?? 25).toDouble();
-    return SoftCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Expanded(
-                child: Text('Body Mass Index',
-                    style:
-                        TextStyle(color: p.ink, fontWeight: FontWeight.w600))),
-            Text(bmi.toStringAsFixed(1),
-                style: const TextStyle(
-                    color: AppTheme.green, fontWeight: FontWeight.w800)),
-          ]),
-          Slider(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic, children: [
+          Text(bmi.toStringAsFixed(1),
+              style: AppType.metric.copyWith(color: p.ink, fontSize: 28)),
+          const SizedBox(width: 10),
+          Text(_bmiBand(bmi).toUpperCase(),
+              style: AppType.label.copyWith(color: p.subtle)),
+        ]),
+        SliderTheme(
+          data: SliderThemeData(
+            trackHeight: 3,
+            activeTrackColor: AppTheme.green,
+            inactiveTrackColor: p.line,
+            thumbColor: AppTheme.green,
+            overlayColor: AppTheme.green.withValues(alpha: 0.10),
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+            trackShape: const RectangularSliderTrackShape(),
+          ),
+          child: Slider(
             value: bmi.clamp(15, 45),
             min: 15,
             max: 45,
-            activeColor: AppTheme.green,
             onChanged: (v) =>
                 _change('BMI', double.parse(v.toStringAsFixed(1))),
           ),
-        ],
-      ),
+        ),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text('15', style: AppType.mono.copyWith(color: p.subtle, fontSize: 11)),
+          Text('45', style: AppType.mono.copyWith(color: p.subtle, fontSize: 11)),
+        ]),
+      ],
     );
+  }
+
+  String _bmiBand(double b) {
+    if (b < 18.5) return 'Underweight';
+    if (b < 25) return 'Healthy';
+    if (b < 30) return 'Overweight';
+    return 'Obese';
   }
 }
