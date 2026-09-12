@@ -14,7 +14,6 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final _name = TextEditingController();
   final _email = TextEditingController();
   final _height = TextEditingController();
   final _weight = TextEditingController();
@@ -40,7 +39,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   void dispose() {
-    _name.dispose();
     _email.dispose();
     _height.dispose();
     _weight.dispose();
@@ -50,7 +48,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _load() async {
     try {
       final p = await ApiClient.instance.getProfile();
-      _name.text = (p['full_name'] ?? '') as String;
       _email.text = (p['email'] ?? '') as String;
       _avatarB64 = (p['avatar'] ?? '') as String;
       _avatarColor = (p['avatar_color'] ?? '#20A57A') as String;
@@ -84,7 +81,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
     try {
       await ApiClient.instance.updateProfile({
-        'full_name': _name.text.trim(),
         'email': _email.text.trim(),
         'avatar': _avatarB64,
         'avatar_color': _avatarColor,
@@ -116,10 +112,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               children: [
                 _avatarSection(p),
                 const SizedBox(height: 22),
-                _label('Full name', p),
-                TextField(controller: _name,
-                    decoration: const InputDecoration(hintText: 'Your name')),
-                const SizedBox(height: 16),
                 _label('Email', p),
                 TextField(controller: _email,
                     keyboardType: TextInputType.emailAddress,
