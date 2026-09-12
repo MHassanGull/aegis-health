@@ -100,7 +100,7 @@ class _HistoryTabState extends State<HistoryTab> {
             TextButton(
                 onPressed: retry,
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                child: const Text('RETRY')),
+                child: const Text('Try again')),
           ],
         ],
       ),
@@ -108,7 +108,7 @@ class _HistoryTabState extends State<HistoryTab> {
   }
 }
 
-/// Risk over time. Straight segments, square dots, a hairline grid — a plot,
+/// Risk over time. Straight segments, square dots, a hairline grid, a plot,
 /// not an infographic. No curve smoothing (it invents readings between
 /// points) and no area fill.
 class _Trend extends StatelessWidget {
@@ -207,7 +207,7 @@ class _Legend extends StatelessWidget {
     return Row(children: [
       Container(width: 9, height: 9, color: color),
       const SizedBox(width: 7),
-      Text(label.toUpperCase(),
+      Text(label,
           style: AppType.label.copyWith(color: Palette.of(context).subtle)),
     ]);
   }

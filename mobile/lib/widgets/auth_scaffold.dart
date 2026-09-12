@@ -6,7 +6,7 @@ import 'shield_logo.dart';
 /// Page frame for the authentication screens.
 ///
 /// Deliberately quiet: a flat background, content aligned to the page gutter,
-/// no animated backdrop. On a sign-in screen the form is the subject — anything
+/// no animated backdrop. On a sign-in screen the form is the subject, anything
 /// moving behind it is noise.
 class AuthScaffold extends StatelessWidget {
   final Widget child;
@@ -43,7 +43,7 @@ class AuthScaffold extends StatelessWidget {
 
 /// The masthead: brand mark, wordmark, and the screen's one statement.
 ///
-/// The mark is a fixed square of brand colour — a printed logotype, not a
+/// The mark is a fixed square of brand colour, a printed logotype, not a
 /// floating orb. Nothing here animates.
 class AuthHeader extends StatelessWidget {
   final String title;
@@ -70,7 +70,7 @@ class AuthHeader extends StatelessWidget {
               child: const ShieldLogo(size: 24, onDark: true),
             ),
             const SizedBox(width: 10),
-            Text('AEGIS HEALTH',
+            Text('Aegis Health',
                 style: AppType.label.copyWith(color: p.ink, letterSpacing: 1.6)),
           ],
         ),
@@ -97,14 +97,14 @@ class FieldLabel extends StatelessWidget {
     final p = Palette.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(text.toUpperCase(),
+      child: Text(text,
           style: AppType.label.copyWith(color: p.subtle)),
     );
   }
 }
 
 /// An error message: a labelled rule and plain red text. No tinted pill, no
-/// icon badge — the label and the colour already carry the meaning, and a
+/// icon badge, the label and the colour already carry the meaning, and a
 /// rule reads as part of the form rather than a sticker dropped on top of it.
 class ErrorNote extends StatelessWidget {
   final String text;
@@ -116,7 +116,7 @@ class ErrorNote extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
-          Text('ERROR',
+          Text('Something went wrong',
               style: AppType.label.copyWith(color: AppTheme.high)),
           const SizedBox(width: 10),
           const Expanded(

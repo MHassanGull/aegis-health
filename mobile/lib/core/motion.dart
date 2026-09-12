@@ -14,7 +14,7 @@ class Motion {
   static const Duration base = Duration(milliseconds: 420);
   static const Duration slow = Duration(milliseconds: 700);
 
-  /// Fast out, long settle — reads as weight rather than springiness.
+  /// Fast out, long settle, reads as weight rather than springiness.
   static const Curve ease = Cubic(0.16, 1, 0.3, 1);
   static const Curve enter = Cubic(0.22, 1, 0.36, 1);
 
@@ -22,6 +22,14 @@ class Motion {
   /// never leave the reader waiting.
   static Duration stagger(int index, {int step = 70, int cap = 560}) =>
       Duration(milliseconds: math.min(index * step, cap));
+
+  /// True when the reader has asked the system to reduce motion.
+  ///
+  /// Some people get motion sickness from sliding and scaling interfaces, and
+  /// Android exposes that preference. Every animation in the app checks this
+  /// and snaps to its end state instead of playing.
+  static bool reduced(BuildContext context) =>
+      MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 }
 
 /// Rises into place and fades in. The workhorse entrance.
@@ -63,6 +71,7 @@ class _RiseState extends State<Rise> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    if (Motion.reduced(context)) return widget.child;
     final t = CurvedAnimation(parent: _c, curve: Motion.enter);
     return AnimatedBuilder(
       animation: t,
@@ -79,7 +88,7 @@ class _RiseState extends State<Rise> with SingleTickerProviderStateMixin {
 }
 
 /// Laid down left-to-right behind a moving edge, the way ink meets paper.
-/// Used for headline type and rules — the app's signature entrance.
+/// Used for headline type and rules, the app's signature entrance.
 class Wipe extends StatefulWidget {
   final Widget child;
   final Duration? delay;
@@ -117,6 +126,7 @@ class _WipeState extends State<Wipe> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    if (Motion.reduced(context)) return widget.child;
     final t = CurvedAnimation(parent: _c, curve: Motion.ease);
     return AnimatedBuilder(
       animation: t,
@@ -158,14 +168,14 @@ class CountUp extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: value),
-      duration: duration,
+      duration: Motion.reduced(context) ? Duration.zero : duration,
       curve: Motion.ease,
       builder: (_, v, __) => Text(v.toStringAsFixed(decimals), style: style),
     );
   }
 }
 
-/// Presses inward under the finger. Subtle — 2% — but it makes every tap feel
+/// Presses inward under the finger. Subtle, 2%, but it makes every tap feel
 /// like it struck something physical.
 class Press extends StatefulWidget {
   final Widget child;
@@ -188,7 +198,7 @@ class _PressState extends State<Press> {
       onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedScale(
-        scale: _down ? 0.98 : 1.0,
+        scale: (_down && !Motion.reduced(context)) ? 0.98 : 1.0,
         duration: Motion.quick,
         curve: Motion.ease,
         child: widget.child,
@@ -199,7 +209,7 @@ class _PressState extends State<Press> {
 
 /// A fine mechanical dot screen, drawn over a flat colour field.
 ///
-/// This is a halftone — how flat ink is actually printed — so the field gains
+/// This is a halftone, how flat ink is actually printed, so the field gains
 /// texture without becoming a gradient. Very low contrast by design: it should
 /// read as paper, not as a pattern.
 class Halftone extends StatelessWidget {
@@ -263,6 +273,7 @@ class EditorialPageTransition extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
+    if (Motion.reduced(context)) return child;
     final inCurve = CurvedAnimation(parent: animation, curve: Motion.enter);
     final outCurve =
         CurvedAnimation(parent: secondaryAnimation, curve: Motion.enter);

@@ -106,7 +106,7 @@ class _WhatIfScreenState extends State<WhatIfScreen> {
         d < -0.05 ? AppTheme.low : (d > 0.05 ? AppTheme.high : p.subtle);
 
     if (_busy) {
-      return Text('RECALCULATING',
+      return Text('Recalculating',
           style: AppType.label.copyWith(color: p.subtle));
     }
     return Row(children: [
@@ -120,7 +120,7 @@ class _WhatIfScreenState extends State<WhatIfScreen> {
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${label.toUpperCase()} CHANGE',
+          Text('${label} CHANGE',
               style: AppType.label.copyWith(color: p.subtle, fontSize: 9)),
           const SizedBox(height: 4),
           Text(value,
@@ -161,7 +161,7 @@ class _WhatIfScreenState extends State<WhatIfScreen> {
           Text(bmi.toStringAsFixed(1),
               style: AppType.metric.copyWith(color: p.ink, fontSize: 28)),
           const SizedBox(width: 10),
-          Text(_bmiBand(bmi).toUpperCase(),
+          Text(_bmiBand(bmi),
               style: AppType.label.copyWith(color: p.subtle)),
         ]),
         SliderTheme(

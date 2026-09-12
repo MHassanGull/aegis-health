@@ -43,7 +43,7 @@ class NotificationService {
         ),
       );
 
-  /// Schedule a repeating reminder every [every] (inexact — battery-friendly,
+  /// Schedule a repeating reminder every [every] (inexact, battery-friendly,
   /// no exact-alarm permission needed).
   Future<void> scheduleInterval({
     required int id,
@@ -58,7 +58,7 @@ class NotificationService {
       body,
       every,
       _details,
-      // Exact alarm that also fires in Doze — reliable reminder timing.
+      // Exact alarm that also fires in Doze, reliable reminder timing.
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }

@@ -36,7 +36,7 @@ class ProfileTab extends StatelessWidget {
                 children: [
                   Text(display, style: AppType.h1.copyWith(color: p.ink)),
                   const SizedBox(height: 3),
-                  Text('SIGNED IN',
+                  Text('Signed in',
                       style: AppType.label.copyWith(color: p.subtle)),
                 ],
               ),
@@ -98,7 +98,7 @@ class _Spec extends StatelessWidget {
             children: [
               SizedBox(
                 width: 80,
-                child: Text(label.toUpperCase(),
+                child: Text(label,
                     style: AppType.label.copyWith(color: p.subtle)),
               ),
               Expanded(

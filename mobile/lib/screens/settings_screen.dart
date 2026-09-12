@@ -66,7 +66,7 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                    'Educational screening only — not a medical diagnosis. Always consult a doctor.',
+                    'Educational screening only, not a medical diagnosis. Please talk to a doctor.',
                     style: TextStyle(color: p.ink, fontSize: 12.5, height: 1.4)),
               ),
             ]),
@@ -132,7 +132,7 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-/// Lets the user point the app at a different backend URL without a rebuild —
+/// Lets the user point the app at a different backend URL without a rebuild, 
 /// USB (127.0.0.1 + adb reverse) or Wi-Fi (http://<PC-IP>:8000).
 class _ServerConnectionTile extends StatefulWidget {
   const _ServerConnectionTile();

@@ -27,7 +27,7 @@ class UserAvatar extends StatelessWidget {
       valueListenable: api.avatarRev,
       builder: (context, _, __) {
         final b64 = api.avatarB64;
-        // Square, one radius — matching every other surface in the app. A
+        // Square, one radius, matching every other surface in the app. A
         // circle here would be the only round thing on the screen.
         if (b64.isNotEmpty) {
           try {
@@ -39,7 +39,7 @@ class UserAvatar extends StatelessWidget {
           } catch (_) {/* fall back to the initial */}
         }
         final name = api.username;
-        final letter = name.isEmpty ? '?' : name[0].toUpperCase();
+        final letter = name.isEmpty ? '?' : name[0];
         final color = parseColor(api.avatarColor);
         return Container(
           height: side,

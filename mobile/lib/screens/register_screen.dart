@@ -67,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String _friendly(String e) {
-    if (e.contains('already')) return 'That username is taken — try another.';
+    if (e.contains('already')) return 'That username is already taken. Try another one.';
     if (e.contains('SocketException') || e.contains('Connection')) {
       return 'Can’t reach the server. Is the backend running?';
     }
@@ -105,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             const SizedBox(width: 8),
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text('OPTIONAL',
+              child: Text('optional',
                   style: AppType.label
                       .copyWith(color: p.subtle.withValues(alpha: 0.7))),
             ),
@@ -153,7 +153,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     width: 18,
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white))
-                : const Text('CREATE ACCOUNT'),
+                : const Text('Create account'),
           ),
           const SizedBox(height: 20),
           Text(
@@ -168,7 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 }
 
 /// Password strength as three flat segments and a word. Square segments, one
-/// radius, no animation — it is a readout, not an effect.
+/// radius, no animation, it is a readout, not an effect.
 class _StrengthMeter extends StatelessWidget {
   final int strength; // 0..3
   final Palette p;
@@ -176,7 +176,7 @@ class _StrengthMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const labels = ['WEAK', 'OKAY', 'GOOD', 'STRONG'];
+    const labels = ['Weak', 'Okay', 'Good', 'Strong'];
     const colors = [
       AppTheme.high,
       AppTheme.amber,

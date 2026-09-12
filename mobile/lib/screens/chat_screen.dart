@@ -108,7 +108,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         color: Colors.white, size: 16),
                   ),
                   const SizedBox(width: 10),
-                  Text('ASSISTANT',
+                  Text('Assistant',
                       style: AppType.label
                           .copyWith(color: p.ink, letterSpacing: 1.6)),
                 ]),

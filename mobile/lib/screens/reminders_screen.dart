@@ -87,11 +87,11 @@ class _RemindersScreenState extends State<RemindersScreen> {
     await NotificationService.instance.showNow(
       900000 + reminder.id,
       'Reminder set ✓',
-      '$title — I’ll remind you ${reminder.everyLabel.toLowerCase()}.',
+      '$title, I’ll remind you ${reminder.everyLabel.toLowerCase()}.',
     );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reminder set — ${reminder.everyLabel.toLowerCase()}')));
+          SnackBar(content: Text('Reminder set, ${reminder.everyLabel.toLowerCase()}')));
     }
   }
 
@@ -138,11 +138,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     style: TextStyle(
                         fontSize: 22, fontWeight: FontWeight.w700, color: p.ink)),
                 const SizedBox(height: 4),
-                Text('Gentle repeating notifications — they work even offline.',
+                Text('Gentle repeating nudges. They work without a connection.',
                     style: TextStyle(color: p.subtle, fontSize: 13)),
-                const SizedBox(height: 14),
-                _batteryTip(p),
-                const SizedBox(height: 18),
+                const SizedBox(height: 22),
                 if (_items.isEmpty)
                   _emptyState(p)
                 else
@@ -163,25 +161,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
             ),
     );
   }
-
-  Widget _batteryTip(Palette p) => Container(
-        padding: const EdgeInsets.all(13),
-        decoration: BoxDecoration(
-            color: p.tint(AppTheme.amber),
-            borderRadius: BorderRadius.circular(AppTheme.radius)),
-        child: Row(children: [
-          const Icon(Icons.battery_saver_rounded,
-              color: AppTheme.amber, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-                'On some phones, battery saver can stop reminders. For reliable '
-                'alerts, allow Aegis to "run in background" / "auto-start" and '
-                'turn off battery optimisation for it in your phone settings.',
-                style: TextStyle(color: p.ink, fontSize: 12, height: 1.4)),
-          ),
-        ]),
-      );
 
   Widget _permissionBanner(Palette p) => Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -211,7 +190,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('NONE SET', style: AppType.label.copyWith(color: p.subtle)),
+            Text('Nothing scheduled yet', style: AppType.label.copyWith(color: p.subtle)),
             const SizedBox(height: 12),
             Text(
                 'Reminders run on the phone itself, so they still fire with '

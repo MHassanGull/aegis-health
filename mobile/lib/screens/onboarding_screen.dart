@@ -104,7 +104,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 },
               ),
             ),
-            // Progress as filled segments of one rule — a measure, not dots.
+            // Progress as filled segments of one rule, a measure, not dots.
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: AppTheme.gutter),
@@ -134,7 +134,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         curve: Curves.easeOut);
                   }
                 },
-                child: Text(last ? 'GET STARTED' : 'NEXT'),
+                child: Text(last ? 'Get started' : 'Next'),
               ),
             ),
           ],

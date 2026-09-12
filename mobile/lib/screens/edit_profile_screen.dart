@@ -243,7 +243,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
     final color = UserAvatar.parseColor(_avatarColor);
     final name = ApiClient.instance.username;
-    final letter = name.isEmpty ? '?' : name[0].toUpperCase();
+    final letter = name.isEmpty ? '?' : name[0];
     return Container(
       height: side,
       width: side,
@@ -264,7 +264,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _swatch(String hex) {
     final color = UserAvatar.parseColor(hex);
-    final selected = _avatarColor.toUpperCase() == hex.toUpperCase();
+    final selected = _avatarColor == hex;
     return GestureDetector(
       onTap: () => setState(() => _avatarColor = hex),
       child: Container(

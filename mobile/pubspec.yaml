@@ -33,20 +33,29 @@ flutter:
   assets:
     - assets/icon/
 
-  # Typography. Archivo (a grotesque) carries the interface; IBM Plex Mono
-  # carries data — risk percentages, metrics, labels — because its tabular
-  # figures keep numbers aligned in columns.
+  # Typography.
+  #   Bricolage Grotesque carries the display voice: characterful, used only
+  #     for the one statement on each screen.
+  #   Instrument Sans does the reading: clean and humanist at body sizes.
+  #   IBM Plex Mono sets every figure, because its tabular digits keep risk
+  #     percentages aligned down a column.
   fonts:
-    - family: Archivo
+    - family: Bricolage
       fonts:
-        - asset: assets/fonts/Archivo-Regular.ttf
+        - asset: assets/fonts/Bricolage-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Archivo-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Archivo-SemiBold.ttf
+        - asset: assets/fonts/Bricolage-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Archivo-Bold.ttf
+        - asset: assets/fonts/Bricolage-Bold.ttf
           weight: 700
+    - family: InstrumentSans
+      fonts:
+        - asset: assets/fonts/InstrumentSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/InstrumentSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/InstrumentSans-SemiBold.ttf
+          weight: 600
     - family: PlexMono
       fonts:
         - asset: assets/fonts/IBMPlexMono-Regular.ttf

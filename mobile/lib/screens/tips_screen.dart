@@ -21,9 +21,9 @@ const _tips = [
   _Tip(Icons.smoke_free_rounded, AppTheme.high, 'Avoid smoking',
       'Smoking damages blood vessels in the kidneys and worsens diabetes complications.'),
   _Tip(Icons.bedtime_rounded, Color(0xFF7E57A6), 'Sleep well',
-      '7–8 hours of sleep helps regulate blood sugar and blood pressure.'),
+      '7 to 8 hours of sleep helps regulate blood sugar and blood pressure.'),
   _Tip(Icons.monitor_heart_rounded, AppTheme.green, 'Know your numbers',
-      'Check blood pressure regularly — high BP quietly harms both heart and kidneys.'),
+      'Check blood pressure regularly, high BP quietly harms both heart and kidneys.'),
 ];
 
 class TipsScreen extends StatelessWidget {

@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../core/api_client.dart';
 import '../core/theme.dart';
 
-/// "Under the Hood" — a live transparency / model-card screen.
+/// "Under the Hood", a live transparency / model-card screen.
 ///
 /// Everything here is real: the architecture is introspected from the trained
 /// neural network on the server, and the metrics come from the training report.
@@ -97,7 +97,7 @@ class _Content extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('ARCHITECTURE',
+              Text('Architecture',
                   style: AppType.label.copyWith(
                       color: Colors.white.withValues(alpha: 0.7),
                       letterSpacing: 1.6)),
@@ -230,7 +230,7 @@ class _Content extends StatelessWidget {
             Expanded(
               child: Text(
                   'These numbers describe an educational screening model, not a '
-                  'medical device. It flags risk to encourage prevention — it '
+                  'medical device. It flags risk to encourage prevention, and it '
                   'does not diagnose.',
                   style: TextStyle(fontSize: 12, color: p.subtle)),
             ),
@@ -747,7 +747,7 @@ class _ConfusionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppTheme.radius)),
             child: Text(
                 'Caught ${_Content._fmt(caught)} of ${_Content._fmt(total)} real '
-                'cases ($recallPct% recall). It leans toward caution — a false '
+                'cases ($recallPct% recall). It leans toward caution, because a false '
                 'alarm is safer than a missed case.',
                 style: TextStyle(color: p.ink, fontSize: 12.5, height: 1.4)),
           ),
@@ -808,7 +808,7 @@ class _WhyRecallCard extends StatelessWidget {
           Text(
               'Only ~14% of people have diabetes and ~4% have kidney disease. '
               'A lazy model that says “nobody is at risk” would still score '
-              '86–96% accuracy — while catching zero real cases. '
+              '86 to 96% accuracy while catching zero real cases. '
               'So we optimise Recall (how many true cases we catch) and '
               'ROC-AUC instead. That is the honest way to judge a screening model.',
               style: TextStyle(color: p.ink, fontSize: 13, height: 1.5)),

@@ -51,7 +51,7 @@ class _HomeTabState extends State<HomeTab> {
               children: [
                 Wipe(
                   delay: const Duration(milliseconds: 120),
-                  child: Text(name.toUpperCase(),
+                  child: Text(name,
                       style: AppType.poster.copyWith(color: p.ink)),
                 ),
                 const SizedBox(height: 14),
@@ -103,7 +103,6 @@ class _HomeTabState extends State<HomeTab> {
                 const _HeavyLabel('Tools'),
                 _ToolRow(
                   index: 1,
-                  n: '01',
                   icon: Icons.notifications_none_rounded,
                   title: 'Health reminders',
                   meta: 'Water, meals, movement, medicine',
@@ -115,7 +114,6 @@ class _HomeTabState extends State<HomeTab> {
                 ),
                 _ToolRow(
                   index: 2,
-                  n: '02',
                   icon: Icons.account_tree_outlined,
                   title: 'Under the hood',
                   meta: 'The network, the data, the scores',
@@ -125,7 +123,6 @@ class _HomeTabState extends State<HomeTab> {
                 ),
                 _ToolRow(
                   index: 3,
-                  n: '03',
                   icon: Icons.menu_book_outlined,
                   title: 'Health guidance',
                   meta: 'Reading on both conditions',
@@ -135,7 +132,6 @@ class _HomeTabState extends State<HomeTab> {
                 ),
                 _ToolRow(
                   index: 4,
-                  n: '04',
                   icon: Icons.place_outlined,
                   title: 'Clinics nearby',
                   meta: 'Opens in Maps',
@@ -157,7 +153,7 @@ class _HomeTabState extends State<HomeTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('TRAINED ON',
+                Text('Trained on',
                     style: AppType.label.copyWith(
                         color: Colors.white.withValues(alpha: 0.45))),
                 const SizedBox(height: 10),
@@ -174,14 +170,14 @@ class _HomeTabState extends State<HomeTab> {
                                 .copyWith(color: Colors.white, fontSize: 40)),
                       ),
                       const SizedBox(width: 10),
-                      Text('PEOPLE',
+                      Text('people',
                           style: AppType.label.copyWith(
                               color: AppTheme.green, letterSpacing: 1.4)),
                     ]),
                 const SizedBox(height: 18),
                 Text(
                     'CDC Behavioral Risk Factor Surveillance System, 2015. '
-                    'Aegis is an educational screening aid — it does not '
+                    'Aegis is an educational screening aid. It does not '
                     'diagnose, and it does not replace a clinician.',
                     style: AppType.small.copyWith(
                         color: Colors.white.withValues(alpha: 0.55),
@@ -195,7 +191,8 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+  String _cap(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
   static String _grouped(int n) {
     final d = n.toString();
@@ -222,9 +219,11 @@ class _Masthead extends StatelessWidget {
               Row(children: [
                 const ShieldLogo(size: 18),
                 const SizedBox(width: 8),
-                Text('AEGIS',
-                    style: AppType.label
-                        .copyWith(color: p.ink, letterSpacing: 2.4)),
+                Text('Aegis',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(letterSpacing: -0.2)),
               ]),
               GestureDetector(
                 onTap: () => Navigator.push(context,
@@ -234,8 +233,7 @@ class _Masthead extends StatelessWidget {
             ],
           ),
         ),
-        // A heavy rule under the masthead states where the page begins.
-        Container(height: AppTheme.heavy, color: p.ink),
+        Rule(),
       ],
     );
   }
@@ -261,7 +259,7 @@ class _CheckField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Text('HEALTH CHECK',
+            Text('Health check',
                 style: AppType.label.copyWith(
                     color: Colors.white.withValues(alpha: 0.75),
                     letterSpacing: 2)),
@@ -272,21 +270,21 @@ class _CheckField extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.35))),
           ]),
           const SizedBox(height: 20),
-          const Text('DIABETES\n& KIDNEY\nRISK.',
+          const Text('Know your risk\nbefore it starts.',
               style: TextStyle(
-                  fontFamily: AppTheme.sans,
+                  fontFamily: AppTheme.display,
                   color: Colors.white,
-                  fontSize: 42,
-                  height: 0.98,
+                  fontSize: 34,
+                  height: 1.06,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: -1.8)),
+                  letterSpacing: -1.2)),
           const SizedBox(height: 22),
           Row(children: [
-            _spec('19', 'QUESTIONS'),
+            _spec('19', 'questions'),
             const SizedBox(width: 26),
-            _spec('2', 'MINUTES'),
+            _spec('2', 'minutes'),
             const SizedBox(width: 26),
-            _spec('0', 'BLOOD TESTS'),
+            _spec('0', 'blood tests'),
           ]),
           const SizedBox(height: 24),
           SizedBox(
@@ -304,7 +302,7 @@ class _CheckField extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (_) => const QuestionnaireScreen()));
               },
-              child: const Text('BEGIN CHECK'),
+              child: const Text('Start my check'),
             ),
           ),
         ],
@@ -353,7 +351,7 @@ class _LastReadingBand extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Text('LAST READING',
+            Text('Your last check',
                 style: AppType.label.copyWith(
                     color: Colors.white.withValues(alpha: 0.45),
                     letterSpacing: 2)),
@@ -365,7 +363,7 @@ class _LastReadingBand extends StatelessWidget {
                       builder: (_) => ResultScreen(
                           result: a['result'] as Map<String, dynamic>))),
               child: Row(children: [
-                Text('OPEN',
+                Text('Open',
                     style: AppType.label.copyWith(color: AppTheme.green)),
                 const SizedBox(width: 6),
                 const Icon(Icons.arrow_forward,
@@ -375,9 +373,9 @@ class _LastReadingBand extends StatelessWidget {
           ]),
           const SizedBox(height: 18),
           Row(children: [
-            _reading('DIABETES', dia, AppTheme.green),
+            _reading('Diabetes', dia, AppTheme.green),
             const SizedBox(width: 34),
-            _reading('KIDNEY', kid, AppTheme.coral),
+            _reading('Kidney', kid, AppTheme.coral),
           ]),
         ],
       ),
@@ -424,11 +422,7 @@ class _HeavyLabel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(text.toUpperCase(),
-              style: AppType.label
-                  .copyWith(color: p.ink, letterSpacing: 2, fontSize: 11)),
-          const SizedBox(height: 10),
-          Container(height: 2, color: p.ink),
+          Text(text, style: Theme.of(context).textTheme.headlineSmall),
         ],
       ),
     );
@@ -439,7 +433,6 @@ class _HeavyLabel extends StatelessWidget {
 /// graphic element that gives the list rhythm.
 class _ToolRow extends StatelessWidget {
   final int index;
-  final String n;
   final IconData icon;
   final String title;
   final String meta;
@@ -448,7 +441,6 @@ class _ToolRow extends StatelessWidget {
   final bool last;
   const _ToolRow({
     required this.index,
-    required this.n,
     required this.icon,
     required this.title,
     required this.meta,
@@ -472,12 +464,8 @@ class _ToolRow extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 34,
-                  child: Text(n,
-                      style: AppType.mono
-                          .copyWith(color: accent, fontSize: 15)),
-                ),
+                IconChip(icon, color: accent, size: 42),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,7 +480,7 @@ class _ToolRow extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(icon, size: 18, color: p.subtle),
+                Icon(Icons.chevron_right_rounded, size: 20, color: p.subtle),
               ],
             ),
           ),

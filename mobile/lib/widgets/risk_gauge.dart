@@ -1,29 +1,39 @@
 import 'package:flutter/material.dart';
+
+import '../core/motion.dart';
 import '../core/theme.dart';
 
-/// A risk readout drawn as a linear measure rather than a dial.
+/// The forecast band. This is the app's signature element.
 ///
-/// A donut with a glowing sweep looks decorative; a measure with a marked
-/// threshold reads like an instrument and shows the one thing that actually
-/// matters clinically — where this person sits relative to the model's
-/// screening cut-off.
+/// The model returns a probability, so the band is built like a forecast
+/// rather than a diagnosis: a filled reading, the screening cut-off marked on
+/// the same scale, and (where known) a ghosted marker for where this person
+/// could land if they acted. Three facts, one scale, no dial.
+///
+/// The same component appears on Home, Result and What-if, which is what ties
+/// those screens together visually.
 class RiskGauge extends StatelessWidget {
   final String title;
-  final double percent; // 0-100
+
+  /// Current reading, 0-100.
+  final double percent;
   final String tier;
 
-  /// The model's screening threshold, as a percentage, marked on the scale.
+  /// The model's screening threshold as a percentage, marked on the scale.
   final double? threshold;
 
-  /// Accepted for call-site compatibility; this design does not use an icon.
-  final IconData? icon;
+  /// Where this person could get to by changing habits, 0-100. Drawn as a
+  /// hollow marker ahead of, or behind, the current reading.
+  final double? achievable;
 
-  /// Set when the gauge sits on the near-black band, so labels and the
-  /// threshold tick invert instead of disappearing into the field.
+  /// Renders for a dark ground.
   final bool onDark;
 
-  /// Full scale of the measure. Risks are small numbers, so a 0-100 axis would
-  /// render every bar as a sliver; 50% is a readable, honest ceiling.
+  /// Accepted for call-site compatibility; the design uses no icon.
+  final IconData? icon;
+
+  /// Risks here are small numbers, so a full 0-100 axis would render every
+  /// reading as a sliver. 50% is a readable and honest ceiling.
   final double scaleMax;
 
   const RiskGauge({
@@ -32,105 +42,193 @@ class RiskGauge extends StatelessWidget {
     required this.percent,
     required this.tier,
     this.threshold,
-    this.icon,
+    this.achievable,
     this.onDark = false,
+    this.icon,
     this.scaleMax = 50,
   });
 
   @override
   Widget build(BuildContext context) {
     final p = Palette.of(context);
+    final t = Theme.of(context).textTheme;
     final color = AppTheme.tierColor(tier);
     final ink = onDark ? Colors.white : p.ink;
-    final muted =
-        onDark ? Colors.white.withValues(alpha: 0.55) : p.subtle;
-    final track = onDark ? Colors.white.withValues(alpha: 0.16) : p.line;
-    final frac = (percent / scaleMax).clamp(0.0, 1.0);
-    final thrFrac =
-        threshold == null ? null : (threshold! / scaleMax).clamp(0.0, 1.0);
+    final muted = onDark ? Colors.white.withValues(alpha: 0.62) : p.subtle;
+    final track = onDark ? Colors.white.withValues(alpha: 0.14) : p.sunk;
+    final pillColor = onDark ? color : p.on(color);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(title.toUpperCase(),
-                style: AppType.label.copyWith(color: muted, letterSpacing: 1.6)),
-            Text('${tier.toUpperCase()} RISK',
-                style: AppType.label.copyWith(color: color)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        // The figure. Monospace, so the decimal point holds its column.
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: percent),
-          duration: const Duration(milliseconds: 700),
-          curve: Curves.easeOutCubic,
-          builder: (context, v, _) => Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+    return Semantics(
+      // One spoken sentence instead of five disconnected fragments.
+      label: '$title risk ${percent.toStringAsFixed(1)} per cent, '
+          '$tier risk'
+          '${threshold != null ? ', screening cut-off '
+              '${threshold!.toStringAsFixed(1)} per cent' : ''}',
+      excludeSemantics: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(v.toStringAsFixed(1),
-                  style: AppType.metric
-                      .copyWith(color: ink, fontSize: onDark ? 46 : 34)),
-              const SizedBox(width: 2),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 3),
-                child: Text('%',
-                    style: AppType.metric.copyWith(
-                        color: muted, fontSize: 18, letterSpacing: 0)),
+              Expanded(
+                child: Text(title,
+                    style: t.titleMedium?.copyWith(color: ink)),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: onDark ? 0.24 : 0.13),
+                  borderRadius: BorderRadius.circular(AppTheme.rPill),
+                ),
+                child: Text(tier.toLowerCase(),
+                    style: t.labelMedium?.copyWith(color: pillColor)),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 14),
-        // The measure: flat fill, square ends, with the threshold marked.
-        LayoutBuilder(
-          builder: (context, c) {
-            final w = c.maxWidth;
-            return SizedBox(
-              height: 18,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    child: Container(height: 8, color: track),
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0, end: frac.toDouble()),
-                      duration: const Duration(milliseconds: 700),
-                      curve: Curves.easeOutCubic,
-                      builder: (_, v, __) =>
-                          Container(height: 8, width: w * v, color: color),
-                    ),
-                  ),
-                  if (thrFrac != null)
-                    Positioned(
-                      left: (w * thrFrac) - 0.5,
-                      top: -3,
-                      child: Container(height: 14, width: 1.5, color: ink),
-                    ),
-                ],
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              CountUp(percent,
+                  style: TextStyle(
+                    fontFamily: AppTheme.mono,
+                    fontSize: onDark ? 46 : 40,
+                    height: 1,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -2,
+                    color: ink,
+                  )),
+              const SizedBox(width: 3),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('%',
+                    style: TextStyle(
+                        fontFamily: AppTheme.mono,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: muted)),
               ),
-            );
-          },
-        ),
-        if (threshold != null) ...[
-          const SizedBox(height: 8),
-          Text('SCREENING CUT-OFF ${threshold!.toStringAsFixed(1)}%',
-              style: AppType.label
-                  .copyWith(color: muted, fontSize: 9, letterSpacing: 0.9)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _Band(
+            value: percent / scaleMax,
+            threshold: threshold == null ? null : threshold! / scaleMax,
+            achievable: achievable == null ? null : achievable! / scaleMax,
+            fill: color,
+            track: track,
+            marker: ink,
+          ),
+          if (threshold != null) ...[
+            const SizedBox(height: 10),
+            Row(children: [
+              Container(
+                width: 2,
+                height: 11,
+                decoration: BoxDecoration(
+                    color: muted,
+                    borderRadius: BorderRadius.circular(AppTheme.rPill)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                    'Flagged above ${threshold!.toStringAsFixed(1)}%',
+                    style: t.bodySmall?.copyWith(color: muted)),
+              ),
+            ]),
+          ],
         ],
-      ],
+      ),
+    );
+  }
+}
+
+/// The band itself: a rounded track, a rounded fill, a cut-off marker and an
+/// optional hollow "achievable" marker.
+class _Band extends StatelessWidget {
+  final double value;
+  final double? threshold;
+  final double? achievable;
+  final Color fill;
+  final Color track;
+  final Color marker;
+
+  const _Band({
+    required this.value,
+    required this.threshold,
+    required this.achievable,
+    required this.fill,
+    required this.track,
+    required this.marker,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const h = 14.0;
+    return LayoutBuilder(
+      builder: (context, c) {
+        final w = c.maxWidth;
+        final v = value.clamp(0.0, 1.0);
+        return SizedBox(
+          height: h,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: track,
+                  borderRadius: BorderRadius.circular(AppTheme.rPill),
+                ),
+              ),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: v),
+                duration: Motion.reduced(context)
+                    ? Duration.zero
+                    : Motion.slow,
+                curve: Motion.ease,
+                builder: (_, t, __) => Container(
+                  width: (w * t).clamp(h, w),
+                  decoration: BoxDecoration(
+                    color: fill,
+                    borderRadius: BorderRadius.circular(AppTheme.rPill),
+                  ),
+                ),
+              ),
+              if (achievable != null)
+                Positioned(
+                  left: (w * achievable!.clamp(0.0, 1.0)) - 7,
+                  top: -1,
+                  child: Container(
+                    height: h + 2,
+                    width: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      border: Border.all(color: marker, width: 2),
+                      borderRadius: BorderRadius.circular(AppTheme.rPill),
+                    ),
+                  ),
+                ),
+              if (threshold != null)
+                Positioned(
+                  left: (w * threshold!.clamp(0.0, 1.0)) - 1.5,
+                  top: -3,
+                  child: Container(
+                    height: h + 6,
+                    width: 3,
+                    decoration: BoxDecoration(
+                      color: marker,
+                      borderRadius: BorderRadius.circular(AppTheme.rPill),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -110,7 +110,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(step.title.toUpperCase(),
+                  Text(step.title,
                       style: AppType.label.copyWith(color: AppTheme.green)),
                   const SizedBox(height: 10),
                   Text(step.subtitle,
@@ -144,7 +144,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
               child: FilledButton(
                 onPressed: _next,
-                child: Text(last ? 'SEE RESULTS' : 'CONTINUE'),
+                child: Text(last ? 'See my results' : 'Continue'),
               ),
             ),
           ],
@@ -169,7 +169,7 @@ class _BmiPreview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Rule(margin: const EdgeInsets.only(bottom: 18)),
-        Text('CALCULATED BMI',
+        Text('Your BMI',
             style: AppType.label.copyWith(color: p.subtle)),
         const SizedBox(height: 8),
         Row(
@@ -179,7 +179,7 @@ class _BmiPreview extends StatelessWidget {
               Text(bmi.toStringAsFixed(1),
                   style: AppType.metric.copyWith(color: p.ink, fontSize: 30)),
               const SizedBox(width: 12),
-              Text(cat.toUpperCase(),
+              Text(cat,
                   style: AppType.label.copyWith(color: color)),
             ]),
       ],

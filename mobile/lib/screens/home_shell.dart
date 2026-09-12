@@ -18,10 +18,10 @@ class _HomeShellState extends State<HomeShell> {
   final _tabs = const [HomeTab(), ChatScreen(), HistoryTab(), ProfileTab()];
 
   static const _items = [
-    (Icons.grid_view_outlined, Icons.grid_view_rounded, 'HOME'),
-    (Icons.forum_outlined, Icons.forum_rounded, 'ASSISTANT'),
-    (Icons.show_chart_outlined, Icons.show_chart_rounded, 'HISTORY'),
-    (Icons.person_outline_rounded, Icons.person_rounded, 'PROFILE'),
+    (Icons.grid_view_outlined, Icons.grid_view_rounded, 'Home'),
+    (Icons.forum_outlined, Icons.forum_rounded, 'Assistant'),
+    (Icons.show_chart_outlined, Icons.show_chart_rounded, 'History'),
+    (Icons.person_outline_rounded, Icons.person_rounded, 'Profile'),
   ];
 
   @override
@@ -37,7 +37,7 @@ class _HomeShellState extends State<HomeShell> {
     return Scaffold(
       body: IndexedStack(index: _index, children: _tabs),
       // A flat bar divided from the page by a single rule. No elevation, no
-      // pill indicator — the active item is stated in ink weight and colour.
+      // pill indicator, the active item is stated in ink weight and colour.
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: p.bg,

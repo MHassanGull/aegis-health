@@ -63,7 +63,7 @@ class ReminderPreset {
 }
 
 const kReminderPresets = <ReminderPreset>[
-  ReminderPreset('water', 'Drink water', 'Time to hydrate — have a glass of water 💧',
+  ReminderPreset('water', 'Drink water', 'Time for a glass of water',
       Icons.local_drink_rounded, Color(0xFF3D8BF2), 2),
   ReminderPreset('food', 'Eat healthy', 'Time for a balanced meal or a healthy snack 🍎',
       Icons.restaurant_rounded, Color(0xFFFF7A63), 4),

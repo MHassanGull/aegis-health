@@ -71,7 +71,7 @@ class _AnalyzingScreenState extends State<AnalyzingScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('RUNNING MODEL',
+          Text('Working',
               style: AppType.label.copyWith(color: AppTheme.green)),
           const SizedBox(height: 16),
           Text('Estimating\nyour risk.',
@@ -102,7 +102,7 @@ class _AnalyzingScreenState extends State<AnalyzingScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('COULD NOT COMPLETE',
+          Text('That did not work',
               style: AppType.label.copyWith(color: AppTheme.high)),
           const SizedBox(height: 14),
           Text(_error!, style: AppType.body.copyWith(color: p.ink)),
@@ -111,7 +111,7 @@ class _AnalyzingScreenState extends State<AnalyzingScreen> {
             width: double.infinity,
             child: FilledButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('GO BACK'),
+              child: const Text('Go back'),
             ),
           ),
         ],

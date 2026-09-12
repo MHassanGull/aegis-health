@@ -43,7 +43,7 @@ class ResultScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  Text('ESTIMATED RISK',
+                  Text('Estimated risk',
                       style: AppType.label.copyWith(
                           color: Colors.white.withValues(alpha: 0.45),
                           letterSpacing: 2)),
@@ -78,7 +78,7 @@ class ResultScreen extends StatelessWidget {
             child: Text(
                 'The tick on each scale is the threshold the model was tuned '
                 'to. Sitting above it means Aegis would flag you for a real '
-                'test — not that you have the condition.',
+                'test. It does not mean you have the condition.',
                 style: AppType.small.copyWith(color: p.subtle, height: 1.55)),
           ),
           Padding(
@@ -96,7 +96,7 @@ class ResultScreen extends StatelessWidget {
                   builder: (_) => WhatIfScreen(payload: payload!, baseline: pred),
                 ),
               ),
-              child: const Text('OPEN WHAT-IF SIMULATOR'),
+              child: const Text('Try changing a habit'),
             ),
           ],
 
@@ -120,7 +120,7 @@ class ResultScreen extends StatelessWidget {
           if (recs.isEmpty)
             Text(
                 'Nothing stands out. Your answers already describe low-risk '
-                'habits — the useful thing now is to keep them and re-check '
+                'habits. The useful thing now is to keep them and check again '
                 'in a few months.',
                 style: AppType.body.copyWith(color: p.ink, height: 1.55))
           else
@@ -138,12 +138,12 @@ class ResultScreen extends StatelessWidget {
           OutlinedButton(
             onPressed: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const ModelScreen())),
-            child: const Text('HOW THE MODEL WORKS'),
+            child: const Text('How this works'),
           ),
           const SizedBox(height: 10),
           FilledButton(
             onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
-            child: const Text('DONE'),
+            child: const Text('Back to home'),
           ),
               ],
             ),
@@ -155,7 +155,7 @@ class ResultScreen extends StatelessWidget {
 }
 
 /// Factor attribution as a ranked table: label left, magnitude right, one
-/// measure per row. No cards — the rule structure does the separating.
+/// measure per row. No cards, the rule structure does the separating.
 class _FactorList extends StatelessWidget {
   final String title;
   final List<dynamic> items;
@@ -168,7 +168,7 @@ class _FactorList extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title.toUpperCase(),
+          Text(title,
               style: AppType.label.copyWith(color: AppTheme.green)),
           const SizedBox(height: 10),
           Text('No significant drivers found.',
@@ -185,7 +185,7 @@ class _FactorList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title.toUpperCase(),
+        Text(title,
             style: AppType.label.copyWith(color: AppTheme.green)),
         const SizedBox(height: 6),
         ...items.map((f) {
@@ -284,7 +284,7 @@ class _Rec extends StatelessWidget {
   Widget _delta(String label, double v, Palette p) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label.toUpperCase(),
+          Text(label,
               style: AppType.label.copyWith(color: p.subtle, fontSize: 9)),
           const SizedBox(height: 3),
           Text('−${v.toStringAsFixed(1)}%',

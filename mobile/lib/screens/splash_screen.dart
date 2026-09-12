@@ -68,7 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       fontWeight: FontWeight.w700,
                       letterSpacing: -1.8)),
               const SizedBox(height: 10),
-              Text('PREVENTIVE HEALTH SCREENING',
+              Text('Know your risk early',
                   style: AppType.label.copyWith(
                       color: Colors.white.withValues(alpha: 0.75),
                       letterSpacing: 1.8)),
@@ -77,7 +77,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   height: AppTheme.hair,
                   color: Colors.white.withValues(alpha: 0.25)),
               const SizedBox(height: 14),
-              Text('DIABETES  ·  KIDNEY DISEASE',
+              Text('Diabetes and kidney disease',
                   style: AppType.label.copyWith(
                       color: Colors.white.withValues(alpha: 0.6))),
             ],
