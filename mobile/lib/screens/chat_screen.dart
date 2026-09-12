@@ -111,10 +111,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   Text('ASSISTANT',
                       style: AppType.label
                           .copyWith(color: p.ink, letterSpacing: 1.6)),
-                  const Spacer(),
-                  Text('CLAUDE',
-                      style: AppType.label
-                          .copyWith(color: p.subtle, fontSize: 9)),
                 ]),
                 const SizedBox(height: 12),
                 Rule(),
