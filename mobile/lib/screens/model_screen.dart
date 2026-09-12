@@ -144,10 +144,9 @@ class _Content extends StatelessWidget {
         ).animate().fadeIn(duration: 400.ms).moveY(begin: 14, end: 0),
 
         const SizedBox(height: 16),
-        _AccuracyHeadline(
-          overall: overall,
-          diabetesAcc: (dia['accuracy'] as num?)?.toDouble() ?? 0,
-          kidneyAcc: (kid['accuracy'] as num?)?.toDouble() ?? 0,
+        _PerformanceCard(
+          dia: dia,
+          kid: kid,
           calibrated: calibrated,
           crossValidated: crossValidated,
           folds: folds,
@@ -401,98 +400,178 @@ class _LoadingSkeleton extends StatelessWidget {
   }
 }
 
-class _AccuracyHeadline extends StatelessWidget {
-  final double overall;      // already a percent, e.g. 91.5
-  final double diabetesAcc;  // fraction, e.g. 0.867
-  final double kidneyAcc;
+/// How well the model works, reported the way a screening model should be.
+///
+/// Accuracy is deliberately NOT the headline. Both conditions are rare, so a
+/// model that answers "no" to everybody scores extremely well on accuracy
+/// while catching nobody: kidney disease appears in 3.7% of this dataset, so
+/// "always no" is 96.3% accurate and 0% useful. ROC-AUC and recall cannot be
+/// won that way, so those lead, and the accuracy trap is stated openly rather
+/// than hidden behind a flattering number.
+class _PerformanceCard extends StatelessWidget {
+  final Map<String, dynamic> dia;
+  final Map<String, dynamic> kid;
   final bool calibrated;
   final bool crossValidated;
   final int folds;
   final Palette p;
-  const _AccuracyHeadline({
-    required this.overall,
-    required this.diabetesAcc,
-    required this.kidneyAcc,
+  const _PerformanceCard({
+    required this.dia,
+    required this.kid,
     required this.calibrated,
     required this.crossValidated,
     required this.folds,
     required this.p,
   });
 
+  double _n(Map<String, dynamic> m, String k) =>
+      (m[k] as num?)?.toDouble() ?? 0;
+
   @override
   Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
     return SoftCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text('How well it works', style: t.headlineSmall),
+          const SizedBox(height: 6),
+          Text('Measured on held-out people the model never saw in training.',
+              style: t.bodySmall),
+          const SizedBox(height: 20),
           Row(children: [
-            const Icon(Icons.verified_rounded, color: AppTheme.green, size: 20),
-            const SizedBox(width: 8),
-            Text('Overall accuracy',
-                style: TextStyle(fontWeight: FontWeight.w700, color: p.ink)),
+            const Expanded(flex: 4, child: SizedBox()),
+            Expanded(
+                flex: 3,
+                child: Text('Diabetes',
+                    textAlign: TextAlign.end,
+                    style:
+                        t.labelMedium?.copyWith(color: p.on(AppTheme.green)))),
+            Expanded(
+                flex: 3,
+                child: Text('Kidney',
+                    textAlign: TextAlign.end,
+                    style:
+                        t.labelMedium?.copyWith(color: p.on(AppTheme.coral)))),
           ]),
           const SizedBox(height: 10),
-          Center(
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: overall),
-              duration: const Duration(milliseconds: 1200),
-              curve: Curves.easeOutCubic,
-              builder: (_, v, __) => Text('${v.toStringAsFixed(1)}%',
-                  style: const TextStyle(
-                      fontSize: 46,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.green,
-                      height: 1.0)),
+          Rule(),
+          _row(context, 'ROC-AUC', _n(dia, 'roc_auc'), _n(kid, 'roc_auc'),
+              decimals: 2,
+              percent: false,
+              note: 'Tells the two groups apart. 0.5 would be a coin toss.'),
+          _row(context, 'Recall', _n(dia, 'recall'), _n(kid, 'recall'),
+              note: 'Share of real cases the screening catches.'),
+          _row(context, 'Precision', _n(dia, 'precision'), _n(kid, 'precision'),
+              note: 'Share of flagged people who truly have it.'),
+          _row(context, 'Balanced accuracy', _n(dia, 'balanced_accuracy'),
+              _n(kid, 'balanced_accuracy'),
+              note: 'Accuracy corrected for how rare the condition is.',
+              last: true),
+          const SizedBox(height: 18),
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            if (crossValidated) _chip('$folds-fold cross-validated'),
+            if (calibrated) _chip('Calibrated probabilities'),
+            _chip('Held-out test set'),
+          ]),
+          const SizedBox(height: 22),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: p.sunk,
+              borderRadius: BorderRadius.circular(AppTheme.rControl),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Why accuracy is not the headline', style: t.titleSmall),
+                const SizedBox(height: 8),
+                Text(
+                    'Kidney disease appears in about 4 people in 100. A model '
+                    'that simply answered no to everyone would be right 96% of '
+                    'the time and would catch nobody. That is why this screen '
+                    'leads with recall and ROC-AUC, which cannot be won that '
+                    'way.',
+                    style: t.bodySmall?.copyWith(height: 1.6)),
+                const SizedBox(height: 12),
+                Text(
+                    'Aegis is tuned to catch cases rather than to look precise. '
+                    'It accepts false alarms, because in screening a missed '
+                    'case costs far more than an unnecessary check.',
+                    style: t.bodySmall?.copyWith(height: 1.6)),
+              ],
             ),
           ),
-          const SizedBox(height: 2),
-          Center(
-            child: Text('correct across both diseases',
-                style: TextStyle(color: p.subtle, fontSize: 12.5)),
-          ),
-          const SizedBox(height: 16),
-          Row(children: [
-            Expanded(child: _mini('Diabetes', diabetesAcc, AppTheme.green)),
-            const SizedBox(width: 10),
-            Expanded(child: _mini('Kidney', kidneyAcc, AppTheme.coral)),
-          ]),
-          const SizedBox(height: 14),
-          Wrap(spacing: 8, runSpacing: 8, children: [
-            if (crossValidated) _chip(Icons.repeat_rounded, '$folds-fold cross-validated'),
-            if (calibrated) _chip(Icons.tune_rounded, 'Calibrated probabilities'),
-          ]),
         ],
       ),
     );
   }
 
-  Widget _mini(String label, double frac, Color color) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-            color: color.withValues(alpha: p.isDark ? 0.22 : 0.12),
-            borderRadius: BorderRadius.circular(AppTheme.radius)),
-        child: Column(children: [
-          Text('${(frac * 100).toStringAsFixed(1)}%',
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.w700, fontSize: 18)),
-          Text(label, style: TextStyle(color: p.subtle, fontSize: 12)),
-        ]),
-      );
+  Widget _row(BuildContext context, String label, double a, double b,
+      {String? note,
+      int decimals = 0,
+      bool percent = true,
+      bool last = false}) {
+    final t = Theme.of(context).textTheme;
+    String fmt(double v) => percent
+        ? '${(v * 100).toStringAsFixed(decimals)}%'
+        : v.toStringAsFixed(decimals);
 
-  Widget _chip(IconData icon, String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    return Column(children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 13),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: t.titleSmall),
+                  if (note != null) ...[
+                    const SizedBox(height: 3),
+                    Text(note, style: t.bodySmall?.copyWith(fontSize: 11.5)),
+                  ],
+                ],
+              ),
+            ),
+            Expanded(
+                flex: 3,
+                child: Text(fmt(a),
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                        fontFamily: AppTheme.mono,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: p.ink))),
+            Expanded(
+                flex: 3,
+                child: Text(fmt(b),
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                        fontFamily: AppTheme.mono,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: p.ink))),
+          ],
+        ),
+      ),
+      if (!last) Rule(),
+    ]);
+  }
+
+  Widget _chip(String text) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
             color: p.tint(AppTheme.green),
-            borderRadius: BorderRadius.circular(AppTheme.radius)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 14, color: AppTheme.greenDark),
-          const SizedBox(width: 5),
-          Text(text,
-              style: const TextStyle(
-                  color: AppTheme.greenDark,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11.5)),
-        ]),
+            borderRadius: BorderRadius.circular(AppTheme.rPill)),
+        child: Text(text,
+            style: TextStyle(
+                fontFamily: AppTheme.sans,
+                color: p.on(AppTheme.green),
+                fontWeight: FontWeight.w600,
+                fontSize: 12)),
       );
 }
 

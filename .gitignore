@@ -30,3 +30,8 @@ mobile/.flutter-plugins-dependencies
 # ── OS / editor ─────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ── Android release signing (NEVER commit) ──────────────────────────────
+mobile/android/key.properties
+mobile/android/*.jks
+mobile/android/*.keystore

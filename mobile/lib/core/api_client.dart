@@ -136,6 +136,15 @@ class ApiClient {
     await prefs.setString(_userKey, username);
   }
 
+  /// Change the signed-in user's password. The server verifies the current
+  /// one, so a borrowed unlocked phone cannot lock the owner out.
+  Future<void> changePassword(String current, String next) async {
+    final r = await http.post(Uri.parse('$_base/api/auth/password/'),
+        headers: _headers,
+        body: jsonEncode({'current_password': current, 'new_password': next}));
+    _decode(r);
+  }
+
   Future<void> logout() async {
     await _setToken(null);
     _avatarB64 = '';

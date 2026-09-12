@@ -63,20 +63,31 @@ class _HistoryTabState extends State<HistoryTab> {
                       'here, so you can watch the numbers move.',
                       null);
                 }
+                // The header block counts as one item, so the rows below it
+                // are built lazily as they scroll into view.
+                final hasTrend = items.length > 1;
                 return RefreshIndicator(
                   onRefresh: () async => _reload(),
-                  child: ListView(
+                  child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(
                         AppTheme.gutter, 6, AppTheme.gutter, 28),
-                    children: [
-                      if (items.length > 1) ...[
-                        const SectionLabel('Trend'),
-                        _Trend(items),
-                        const SizedBox(height: 32),
-                      ],
-                      SectionLabel('Checks · ${items.length}'),
-                      ...items.map((a) => _HistoryRow(a)),
-                    ],
+                    itemCount: items.length + 1,
+                    itemBuilder: (context, i) {
+                      if (i == 0) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (hasTrend) ...[
+                              const SectionLabel('Trend'),
+                              _Trend(items),
+                              const SizedBox(height: 32),
+                            ],
+                            SectionLabel('Checks · ${items.length}'),
+                          ],
+                        );
+                      }
+                      return _HistoryRow(items[i - 1]);
+                    },
                   ),
                 );
               },

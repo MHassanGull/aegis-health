@@ -130,34 +130,43 @@ class _RemindersScreenState extends State<RemindersScreen> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 90),
-              children: [
-                if (!_granted) _permissionBanner(p),
-                Text('Stay healthy on schedule',
-                    style: TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.w700, color: p.ink)),
-                const SizedBox(height: 4),
-                Text('Gentle repeating nudges. They work without a connection.',
-                    style: TextStyle(color: p.subtle, fontSize: 13)),
-                const SizedBox(height: 22),
-                if (_items.isEmpty)
-                  _emptyState(p)
-                else
-                  ...List.generate(_items.length, (i) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _ReminderCard(
-                        _items[i],
-                        p,
-                        onToggle: (v) => _toggle(_items[i], v),
-                        onDelete: () => _delete(_items[i]),
-                        onTest: () => NotificationService.instance.showNow(
-                            999000 + i, _items[i].title, _items[i].body),
-                      ).animate().fadeIn(delay: (i * 60).ms).moveY(begin: 10, end: 0),
-                    );
-                  }),
-              ],
+          // The header is item 0; reminder cards below it are built lazily,
+          // so a long list costs no more to open than a short one.
+          : ListView.builder(
+              padding: const EdgeInsets.fromLTRB(AppTheme.gutter, 8,
+                  AppTheme.gutter, 96),
+              itemCount: (_items.isEmpty ? 1 : _items.length) + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!_granted) _permissionBanner(p),
+                      Text('Stay healthy on schedule',
+                          style: Theme.of(context).textTheme.displaySmall),
+                      const SizedBox(height: 6),
+                      Text(
+                          'Gentle repeating nudges. They work without a '
+                          'connection.',
+                          style: Theme.of(context).textTheme.bodyMedium),
+                      const SizedBox(height: 22),
+                    ],
+                  );
+                }
+                if (_items.isEmpty) return _emptyState(p);
+                final i = index - 1;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _ReminderCard(
+                    _items[i],
+                    p,
+                    onToggle: (v) => _toggle(_items[i], v),
+                    onDelete: () => _delete(_items[i]),
+                    onTest: () => NotificationService.instance
+                        .showNow(999000 + i, _items[i].title, _items[i].body),
+                  ),
+                );
+              },
             ),
     );
   }

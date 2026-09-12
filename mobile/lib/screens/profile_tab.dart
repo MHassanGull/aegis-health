@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/api_client.dart';
 import '../core/theme.dart';
 import '../widgets/user_avatar.dart';
+import 'change_password_screen.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
 
@@ -51,6 +52,14 @@ class ProfileTab extends StatelessWidget {
             meta: 'Name, photo, height and weight',
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const EditProfileScreen())),
+          ),
+          _NavRow(
+            title: 'Change password',
+            meta: 'Update the password you sign in with',
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const ChangePasswordScreen())),
           ),
           _NavRow(
             title: 'Settings',
