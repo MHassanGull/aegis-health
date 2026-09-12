@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// Multi-step questionnaire definition for Aegis Health.
 ///
 /// Friendly wording, height+weight instead of raw BMI, and no education/income.
-/// The model still needs 19 features; BMI is computed from height & weight in
+/// The model needs 18 features; BMI is computed from height and weight in
 /// [buildPayload] before sending to the backend.
 enum QType { toggle, segmented, dropdown, slider, number }
 
@@ -91,14 +91,12 @@ const List<QStep> kSteps = [
     Question(key: 'DiffWalk', label: 'Difficulty walking or climbing stairs?',
         type: QType.toggle, choices: _yesNo, defaultValue: 0),
   ]),
-  QStep('Wellbeing', 'How you feel overall', Icons.spa_rounded, [
+  QStep('Wellbeing', 'How you have been feeling', Icons.spa_rounded, [
     Question(key: 'GenHlth', label: 'Your general health', type: QType.dropdown,
         defaultValue: 3, choices: [
       Choice('Excellent', 1), Choice('Very good', 2), Choice('Good', 3),
       Choice('Fair', 4), Choice('Poor', 5),
     ]),
-    Question(key: 'MentHlth', label: 'Poor mental-health days (last 30)',
-        type: QType.slider, min: 0, max: 30, divisions: 30, defaultValue: 0),
     Question(key: 'PhysHlth', label: 'Poor physical-health days (last 30)',
         type: QType.slider, min: 0, max: 30, divisions: 30, defaultValue: 0),
     Question(key: 'AnyHealthcare', label: 'Do you have health-care coverage?',
@@ -132,7 +130,7 @@ String bmiCategory(double bmi) {
   return 'Obese';
 }
 
-/// Convert questionnaire answers into the 19-feature payload the model expects.
+/// Convert questionnaire answers into the 18-feature payload the model expects.
 Map<String, num> buildPayload(Map<String, num> answers) {
   final out = Map<String, num>.from(answers);
   final bmi = bmiFrom(answers['heightCm'] ?? 170, answers['weightKg'] ?? 70);

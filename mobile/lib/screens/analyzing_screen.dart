@@ -90,7 +90,7 @@ class _AnalyzingScreenState extends State<AnalyzingScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-              'Nineteen inputs through a shared network, then attribution and '
+              'Eighteen inputs through a shared network, then attribution and '
               'the what-if pass.',
               style: AppType.small.copyWith(color: p.subtle, height: 1.55)),
         ],

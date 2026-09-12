@@ -38,12 +38,15 @@ FEATURE_DESCRIPTIONS = {
     "AnyHealthcare": "Has any health-care coverage",
     "NoDocbcCost": "Could not see doctor due to cost",
     "GenHlth": "Self-rated general health (1 best - 5 worst)",
-    "MentHlth": "Days of poor mental health (past 30)",
     "PhysHlth": "Days of poor physical health (past 30)",
     "DiffWalk": "Serious difficulty walking or climbing stairs",
     "Sex": "Sex (0 female, 1 male)",
     "Age": "Age category (1 = 18-24 ... 13 = 80+)",
     # Education & Income removed for a friendlier, less intrusive questionnaire.
+    # MentHlth removed too: asking how many days someone felt mentally unwell
+    # is intrusive for a diabetes and kidney screening, and permutation
+    # importance put it 15th of 19, worth about 0.001 AUC. Not a trade worth
+    # making.
 }
 FEATURES = list(FEATURE_DESCRIPTIONS.keys())
 

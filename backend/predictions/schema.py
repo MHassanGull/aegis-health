@@ -20,7 +20,6 @@ FEATURE_META = {
     "AnyHealthcare":        {"label": "Has health-care coverage", "type": "binary"},
     "NoDocbcCost":          {"label": "Skipped doctor due to cost", "type": "binary"},
     "GenHlth":              {"label": "General health (1 best - 5 worst)", "type": "ordinal", "min": 1, "max": 5},
-    "MentHlth":             {"label": "Poor mental-health days (0-30)", "type": "count", "min": 0, "max": 30},
     "PhysHlth":             {"label": "Poor physical-health days (0-30)", "type": "count", "min": 0, "max": 30},
     "DiffWalk":             {"label": "Difficulty walking", "type": "binary"},
     "Sex":                  {"label": "Sex (0 female, 1 male)", "type": "binary"},
