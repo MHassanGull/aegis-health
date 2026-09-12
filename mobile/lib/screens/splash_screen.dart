@@ -22,7 +22,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _route() async {
-    await Future.delayed(const Duration(milliseconds: 2100));
+    // Long enough to read the wordmark, short enough not to feel like
+    // a loading screen.
+    await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
     final prefs = await SharedPreferences.getInstance();
     final seen = prefs.getBool('seen_onboarding') ?? false;
@@ -38,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: const Duration(milliseconds: 280),
         pageBuilder: (_, a, __) => FadeTransition(opacity: a, child: next),
       ),
     );

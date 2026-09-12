@@ -11,8 +11,8 @@ class Motion {
   Motion._();
 
   static const Duration quick = Duration(milliseconds: 180);
-  static const Duration base = Duration(milliseconds: 420);
-  static const Duration slow = Duration(milliseconds: 700);
+  static const Duration base = Duration(milliseconds: 260);
+  static const Duration slow = Duration(milliseconds: 480);
 
   /// Fast out, long settle, reads as weight rather than springiness.
   static const Curve ease = Cubic(0.16, 1, 0.3, 1);
@@ -20,7 +20,7 @@ class Motion {
 
   /// Delay for the nth item in a staggered sequence, capped so long lists
   /// never leave the reader waiting.
-  static Duration stagger(int index, {int step = 70, int cap = 560}) =>
+  static Duration stagger(int index, {int step = 40, int cap = 200}) =>
       Duration(milliseconds: math.min(index * step, cap));
 
   /// True when the reader has asked the system to reduce motion.

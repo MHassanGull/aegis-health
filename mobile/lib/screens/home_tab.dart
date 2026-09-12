@@ -50,14 +50,14 @@ class _HomeTabState extends State<HomeTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Wipe(
-                  delay: const Duration(milliseconds: 120),
+                  delay: Duration.zero,
                   child: Text(name,
                       style: AppType.poster.copyWith(color: p.ink)),
                 ),
                 const SizedBox(height: 14),
                 Row(children: [
                   Wipe(
-                    delay: const Duration(milliseconds: 460),
+                    delay: const Duration(milliseconds: 160),
                     duration: Motion.base,
                     child:
                         Container(width: 28, height: 3, color: AppTheme.coral),
@@ -65,7 +65,7 @@ class _HomeTabState extends State<HomeTab> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Rise(
-                      delay: const Duration(milliseconds: 520),
+                      delay: const Duration(milliseconds: 180),
                       distance: 8,
                       child: Text(
                           'Risk is not fixed. Measure it, then move it.',
@@ -80,7 +80,7 @@ class _HomeTabState extends State<HomeTab> {
 
           // ---- Full-bleed green field: the one action -----------------------
           const Rise(
-              delay: Duration(milliseconds: 300),
+              delay: Duration(milliseconds: 90),
               distance: 26,
               child: _CheckField()),
 
@@ -163,7 +163,7 @@ class _HomeTabState extends State<HomeTab> {
                     children: [
                       TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0, end: 253155),
-                        duration: const Duration(milliseconds: 1100),
+                        duration: const Duration(milliseconds: 700),
                         curve: Motion.ease,
                         builder: (_, v, __) => Text(_grouped(v.round()),
                             style: AppType.figure
@@ -453,7 +453,7 @@ class _ToolRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = Palette.of(context);
     return Rise(
-      delay: Duration(milliseconds: 560 + index * 80),
+      delay: Duration(milliseconds: 140 + index * 35),
       distance: 14,
       child: Column(
       children: [

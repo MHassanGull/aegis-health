@@ -116,41 +116,49 @@ class PredictionService:
         return out
 
     def explain(self, payload: dict, top_k: int = 5) -> dict:
-        """Occlusion analysis: how much each feature raises risk vs. its
-        population-average value. Fast (one forward pass per feature)."""
-        raw = self._raw_vector(payload)
-        scaled = self.scaler.transform(raw)
-        base = self._proba_matrix(scaled)[0]
-
-        contributions = {self.disease_names[l]: [] for l in self.labels}
-        for j, feat in enumerate(self.features):
-            occ = scaled.copy()
-            occ[0, j] = 0.0                       # 0 == population mean (standardised)
-            p = self._proba_matrix(occ)[0]
-            delta = base - p                      # positive => feature increases risk
-            for i, label in enumerate(self.labels):
-                contributions[self.disease_names[label]].append(
-                    (feat, float(delta[i]))
-                )
-
-        result = {}
-        for disease, items in contributions.items():
-            risers = sorted((x for x in items if x[1] > 0), key=lambda x: -x[1])[:top_k]
-            result[disease] = [
-                {"feature": f, "label": schema.FEATURE_META[f]["label"],
-                 "impact": round(d, 4)}
-                for f, d in risers
-            ]
-        return result
+        """Occlusion analysis: how much each feature lifts risk compared with
+        its population-average value."""
+        return self._split(self.assess(payload))[1]
 
     def advise(self, payload: dict, top_k: int = 3) -> list:
-        """What-if simulation: apply each realistic habit improvement and report
-        the projected risk reduction."""
-        raw = self._raw_vector(payload)
-        base = self._proba(raw)
-        suggestions = []
+        """What-if simulation: apply each realistic habit improvement and
+        report the projected reduction."""
+        return self._split(self.assess(payload))[2]
+
+    @staticmethod
+    def _split(result: dict):
+        return (result["prediction"], result["key_factors"],
+                result["recommendations"])
+
+    # -- the hot path ------------------------------------------------------
+    def assess(self, payload: dict, top_k: int = 5, advice_k: int = 3) -> dict:
+        """Prediction, explanation and recommendations in ONE forward pass.
+
+        The obvious implementation runs the model once per question being
+        asked: once for the prediction, once per feature to measure its
+        contribution, and once per habit to simulate changing it. That is 26
+        calls for 19 features, and on a small shared CPU the per-call overhead
+        through pandas and scikit-learn dominates completely: the arithmetic is
+        trivial, the round trips are not. Measured at roughly 11 seconds.
+
+        Instead every row the analysis needs is stacked into a single matrix
+        and scored in one call:
+
+            row 0            the person as they answered
+            rows 1..F        the same person with feature i neutralised
+            rows F+1..F+M    the same person after one realistic habit change
+
+        Same arithmetic, same results, one call.
+        """
+        feats = self.features
+        n_feat = len(feats)
+        base_row = {f: float(payload[f]) for f in feats}
+
+        # --- raw rows: the person, plus one row per realistic habit change --
+        raw_rows = [base_row]
+        actions = []
         for feat, rule in schema.MODIFIABLE.items():
-            if feat not in self.features:
+            if feat not in feats:
                 continue
             current = float(payload[feat])
             target = float(rule["target"])
@@ -158,33 +166,80 @@ class PredictionService:
                 continue
             if not rule.get("only_if_worse") and current == target:
                 continue
+            row = dict(base_row)
+            row[feat] = target
+            raw_rows.append(row)
+            actions.append(rule["action"])
 
-            modified = dict(payload)
-            modified[feat] = target
-            new = self._proba(self._raw_vector(modified))
-            reductions = {self.disease_names[self.labels[i]]: float(base[i] - new[i])
-                          for i in range(len(self.labels))}
-            total = sum(max(0.0, v) for v in reductions.values())
+        # Scale the person and the what-if rows together, as a named frame so
+        # the scaler keeps its feature names.
+        scaled = self.scaler.transform(pd.DataFrame(raw_rows, columns=feats))
+        scaled_base = scaled[0:1]
+        scaled_whatif = scaled[1:]
+
+        # --- occlusion rows: the person with feature i set to the mean ------
+        # 0.0 is the population mean once standardised.
+        occluded = np.repeat(scaled_base, n_feat, axis=0)
+        occluded[np.arange(n_feat), np.arange(n_feat)] = 0.0
+
+        # --- one call for everything ----------------------------------------
+        matrix = np.vstack([scaled_base, occluded, scaled_whatif])
+        probs = self._proba_matrix(matrix)
+
+        base_p = probs[0]
+        occluded_p = probs[1:1 + n_feat]
+        whatif_p = probs[1 + n_feat:]
+
+        # --- prediction ------------------------------------------------------
+        prediction = {}
+        for i, label in enumerate(self.labels):
+            name = self.disease_names[label]
+            thr = self.thresholds[label]
+            prob = float(base_p[i])
+            prediction[name] = {
+                "risk": round(prob, 4),
+                "risk_percent": round(prob * 100, 1),
+                "tier": schema.risk_tier(prob, thr),
+                "threshold": round(float(thr), 4),
+            }
+
+        # --- attribution ------------------------------------------------------
+        # Positive delta means the feature pushes this person's risk up.
+        deltas = base_p - occluded_p                    # (n_feat, n_labels)
+        key_factors = {}
+        for i, label in enumerate(self.labels):
+            name = self.disease_names[label]
+            risers = [(feats[j], float(deltas[j, i]))
+                      for j in range(n_feat) if deltas[j, i] > 0]
+            risers.sort(key=lambda x: -x[1])
+            key_factors[name] = [
+                {"feature": f,
+                 "label": schema.FEATURE_META[f]["label"],
+                 "impact": round(d, 4)}
+                for f, d in risers[:top_k]
+            ]
+
+        # --- recommendations --------------------------------------------------
+        recommendations = []
+        for k, action in enumerate(actions):
+            reductions = base_p - whatif_p[k]           # (n_labels,)
+            total = float(sum(max(0.0, v) for v in reductions))
             if total <= 0:
                 continue
-            suggestions.append({
-                "action": rule["action"],
-                "diabetes_reduction_percent": round(reductions["diabetes"] * 100, 1),
-                "kidney_reduction_percent": round(reductions["kidney"] * 100, 1),
+            recommendations.append({
+                "action": action,
+                "diabetes_reduction_percent": round(float(reductions[0]) * 100, 1),
+                "kidney_reduction_percent": round(float(reductions[1]) * 100, 1),
                 "_total": total,
             })
+        recommendations.sort(key=lambda r: -r["_total"])
+        for r in recommendations:
+            r.pop("_total", None)
 
-        suggestions.sort(key=lambda s: -s["_total"])
-        for s in suggestions:
-            s.pop("_total", None)
-        return suggestions[:top_k]
-
-    def assess(self, payload: dict) -> dict:
-        """Full assessment: prediction + explanation + recommendations."""
         return {
-            "prediction": self.predict(payload),
-            "key_factors": self.explain(payload),
-            "recommendations": self.advise(payload),
+            "prediction": prediction,
+            "key_factors": key_factors,
+            "recommendations": recommendations[:advice_k],
         }
 
     # -- transparency: model card -----------------------------------------

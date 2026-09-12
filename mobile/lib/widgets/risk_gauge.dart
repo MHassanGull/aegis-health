@@ -188,7 +188,7 @@ class _Band extends StatelessWidget {
                 tween: Tween(begin: 0, end: v),
                 duration: Motion.reduced(context)
                     ? Duration.zero
-                    : Motion.slow,
+                    : Motion.base,
                 curve: Motion.ease,
                 builder: (_, t, __) => Container(
                   width: (w * t).clamp(h, w),

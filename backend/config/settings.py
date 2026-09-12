@@ -121,6 +121,24 @@ else:
         }
     }
 
+# Password hashing cost.
+#
+# Django 6 defaults PBKDF2 to 1,200,000 iterations. That is excellent on real
+# hardware, but this service runs on a 0.1-CPU instance where it costs several
+# seconds of every sign-in, which users read as "the app is broken".
+#
+# 600,000 is the figure OWASP recommends for PBKDF2-HMAC-SHA256, so this stays
+# within current guidance while halving the wait. Existing hashes keep working:
+# Django re-hashes each password transparently on the owner's next sign-in.
+PASSWORD_HASHERS = [
+    "accounts.hashers.TunedPBKDF2Hasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
