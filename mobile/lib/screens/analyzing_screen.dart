@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../core/api_client.dart';
 import '../core/theme.dart';
+import '../widgets/ecg_line.dart';
 import '../widgets/shield_logo.dart';
 import 'result_screen.dart';
 
@@ -77,11 +78,14 @@ class _AnalyzingScreenState extends State<AnalyzingScreen> {
           Text('Estimating\nyour risk.',
               style: AppType.display.copyWith(color: p.ink)),
           const SizedBox(height: 28),
-          SizedBox(
-            height: 3,
-            child: LinearProgressIndicator(
-              backgroundColor: p.line,
-              valueColor: const AlwaysStoppedAnimation(AppTheme.green),
+          const SizedBox(
+            height: 72,
+            width: double.infinity,
+            child: EcgLine(
+              color: AppTheme.green,
+              amplitude: 0.42,
+              sweepSeconds: 1.9,
+              beatsAcross: 2.0,
             ),
           ),
           const SizedBox(height: 16),

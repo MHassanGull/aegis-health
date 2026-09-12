@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
 import '../core/theme.dart';
+import '../core/motion.dart';
+import '../widgets/ecg_line.dart';
 import '../widgets/shield_logo.dart';
 import 'onboarding_screen.dart';
 import 'login_screen.dart';
@@ -24,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _route() async {
     // Long enough to read the wordmark, short enough not to feel like
     // a loading screen.
-    await Future.delayed(const Duration(milliseconds: 900));
+    await Future.delayed(const Duration(milliseconds: 1700));
     if (!mounted) return;
     final prefs = await SharedPreferences.getInstance();
     final seen = prefs.getBool('seen_onboarding') ?? false;
@@ -48,44 +50,82 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // A flat brand field with the mark and wordmark set against the page
-    // gutter, the way a title page is set. No gradient, no bounce.
+    // Centred, and the cardiac trace runs the full width beneath the mark, so
+    // the first thing the app does is the thing the app is for: read a line
+    // and watch it move.
     return Scaffold(
-      backgroundColor: AppTheme.green,
+      backgroundColor: AppTheme.greenField,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppTheme.gutter),
+        child: Center(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(),
-              const ShieldLogo(size: 56, onDark: true),
-              const SizedBox(height: 28),
+              const _Mark(),
+              const SizedBox(height: 26),
               const Text('Aegis',
                   style: TextStyle(
-                      fontFamily: AppTheme.sans,
+                      fontFamily: AppTheme.display,
                       color: Colors.white,
-                      fontSize: 46,
+                      fontSize: 44,
                       height: 1.0,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -1.8)),
+                      letterSpacing: -1.6)),
               const SizedBox(height: 10),
               Text('Know your risk early',
-                  style: AppType.label.copyWith(
-                      color: Colors.white.withValues(alpha: 0.75),
-                      letterSpacing: 1.8)),
-              const Spacer(),
-              Container(
-                  height: AppTheme.hair,
-                  color: Colors.white.withValues(alpha: 0.25)),
-              const SizedBox(height: 14),
-              Text('Diabetes and kidney disease',
-                  style: AppType.label.copyWith(
-                      color: Colors.white.withValues(alpha: 0.6))),
+                  style: TextStyle(
+                      fontFamily: AppTheme.sans,
+                      color: Colors.white.withValues(alpha: 0.72),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500)),
+              const SizedBox(height: 44),
+              const SizedBox(
+                height: 64,
+                width: double.infinity,
+                child: EcgLine(
+                  color: Colors.white,
+                  amplitude: 0.40,
+                  sweepSeconds: 2.1,
+                  beatsAcross: 2.4,
+                  strokeWidth: 2.2,
+                ),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The shield, easing up to full size once as the app opens.
+class _Mark extends StatefulWidget {
+  const _Mark();
+  @override
+  State<_Mark> createState() => _MarkState();
+}
+
+class _MarkState extends State<_Mark> with SingleTickerProviderStateMixin {
+  late final AnimationController _c =
+      AnimationController(vsync: this, duration: Motion.slow)..forward();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const mark = ShieldLogo(size: 92, onDark: true);
+    if (Motion.reduced(context)) return mark;
+    final t = CurvedAnimation(parent: _c, curve: Motion.enter);
+    return AnimatedBuilder(
+      animation: t,
+      builder: (context, child) => Opacity(
+        opacity: t.value,
+        child: Transform.scale(scale: 0.88 + 0.12 * t.value, child: child),
+      ),
+      child: mark,
     );
   }
 }
