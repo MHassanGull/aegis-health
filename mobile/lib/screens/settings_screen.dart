@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/api_client.dart';
+import '../core/config.dart';
 import '../core/theme.dart';
 import '../state/auth_state.dart';
 import '../state/theme_controller.dart';
@@ -184,19 +185,21 @@ class _ServerConnectionTileState extends State<_ServerConnectionTile> {
               controller: c,
               keyboardType: TextInputType.url,
               autocorrect: false,
-              decoration: const InputDecoration(hintText: 'http://127.0.0.1:8000'),
+              decoration: const InputDecoration(
+                  hintText: 'https://aegis-health-jc2o.onrender.com'),
             ),
             const SizedBox(height: 10),
             const Text(
-                'USB: http://127.0.0.1:8000 (run "adb reverse tcp:8000 tcp:8000").\n'
-                'Wi-Fi: http://<your-PC-IP>:8000 (same network).',
+                'Leave this on the live server unless you are developing.\n'
+                'Local over USB: http://127.0.0.1:8000 '
+                '(needs "adb reverse tcp:8000 tcp:8000").',
                 style: TextStyle(fontSize: 11.5)),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, '127.0.0.1'),
-              child: const Text('USB default')),
+              onPressed: () => Navigator.pop(context, 'live'),
+              child: const Text('Use live server')),
           FilledButton(
               onPressed: () => Navigator.pop(context, c.text.trim()),
               child: const Text('Save')),
@@ -204,7 +207,7 @@ class _ServerConnectionTileState extends State<_ServerConnectionTile> {
       ),
     );
     if (result == null) return;
-    final url = result == '127.0.0.1' ? 'http://127.0.0.1:8000' : result;
+    final url = result == 'live' ? AppConfig.apiBaseUrl : result;
     await ApiClient.instance.setBaseUrl(url);
     if (mounted) {
       setState(() {});
