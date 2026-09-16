@@ -69,7 +69,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => _IntervalPicker(preset.defaultHours),
+      builder: (_) => _IntervalPicker(preset.defaultMinutes),
     );
     if (hours == null) return;
 
@@ -78,7 +78,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       type: preset.type,
       title: title,
       body: body,
-      everyHours: hours,
+      everyMinutes: hours,
     );
     _items.add(reminder);
     await _sync();
@@ -338,64 +338,130 @@ class _PresetPicker extends StatelessWidget {
   }
 }
 
-class _IntervalPicker extends StatelessWidget {
-  final int defaultHours;
-  const _IntervalPicker(this.defaultHours);
+class _IntervalPicker extends StatefulWidget {
+  final int defaultMinutes;
+  const _IntervalPicker(this.defaultMinutes);
+  @override
+  State<_IntervalPicker> createState() => _IntervalPickerState();
+}
+
+class _IntervalPickerState extends State<_IntervalPicker> {
+  final _custom = TextEditingController();
+
+  @override
+  void dispose() {
+    _custom.dispose();
+    super.dispose();
+  }
+
+  // Short intervals exist so the feature can actually be tested. Waiting an
+  // hour to find out whether a notification fires is not a test.
+  static const _testOptions = [
+    (1, '1 min'), (2, '2 min'), (5, '5 min'), (10, '10 min'), (15, '15 min'),
+  ];
+  static const _normalOptions = [
+    (30, '30 min'), (60, 'Every hour'), (120, 'Every 2 hours'),
+    (180, 'Every 3 hours'), (240, 'Every 4 hours'), (360, 'Every 6 hours'),
+    (480, 'Every 8 hours'), (720, 'Every 12 hours'), (1440, 'Every day'),
+    (10080, 'Every week'),
+  ];
+
+  void _submitCustom() {
+    final v = int.tryParse(_custom.text.trim());
+    if (v == null || v < 1 || v > 43200) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text('Enter a whole number of minutes between 1 and 43200.')));
+      return;
+    }
+    Navigator.pop(context, v);
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = Palette.of(context);
-    const options = [
-      (1, 'Every hour'),
-      (2, 'Every 2 hours'),
-      (3, 'Every 3 hours'),
-      (4, 'Every 4 hours'),
-      (6, 'Every 6 hours'),
-      (8, 'Every 8 hours'),
-      (12, 'Every 12 hours'),
-      (24, 'Every day'),
-      (168, 'Every week'),
-    ];
+    final t = Theme.of(context).textTheme;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 6, bottom: 10),
-              child: Text('How often?',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700, color: p.ink, fontSize: 16)),
-            ),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final (h, label) in options)
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context, h),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: h == defaultHours
-                            ? AppTheme.green
-                            : p.tint(AppTheme.green),
-                        borderRadius: BorderRadius.circular(AppTheme.radius),
-                      ),
-                      child: Text(label,
-                          style: TextStyle(
-                              color: h == defaultHours
-                                  ? Colors.white
-                                  : AppTheme.greenDark,
-                              fontWeight: FontWeight.w700)),
-                    ),
+        padding: EdgeInsets.fromLTRB(AppTheme.gutter, 0, AppTheme.gutter,
+            16 + MediaQuery.of(context).viewInsets.bottom),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('How often?', style: t.headlineSmall),
+              const SizedBox(height: 16),
+              Text('FOR TESTING',
+                  style: AppType.label.copyWith(color: AppTheme.coral)),
+              const SizedBox(height: 4),
+              Text('Short intervals, so you can watch it fire.',
+                  style: t.bodySmall),
+              const SizedBox(height: 10),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                for (final (m, label) in _testOptions)
+                  _chip(label, m, p, AppTheme.coral),
+              ]),
+              const SizedBox(height: 22),
+              Text('EVERYDAY', style: AppType.label.copyWith(color: p.subtle)),
+              const SizedBox(height: 10),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                for (final (m, label) in _normalOptions)
+                  _chip(label, m, p, AppTheme.green),
+              ]),
+              const SizedBox(height: 22),
+              Text('OR SET YOUR OWN',
+                  style: AppType.label.copyWith(color: p.subtle)),
+              const SizedBox(height: 10),
+              Row(children: [
+                Expanded(
+                  child: TextField(
+                    controller: _custom,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                        hintText: 'minutes, e.g. 3', isDense: true),
+                    onSubmitted: (_) => _submitCustom(),
                   ),
-              ],
-            ),
-          ],
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  style:
+                      FilledButton.styleFrom(minimumSize: const Size(96, 48)),
+                  onPressed: _submitCustom,
+                  child: const Text('Set'),
+                ),
+              ]),
+              const SizedBox(height: 14),
+              Text(
+                  'Android decides exactly when a repeating alarm fires, so a '
+                  'short interval can drift by a minute or so.',
+                  style: t.bodySmall),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _chip(String label, int minutes, Palette p, Color accent) {
+    final selected = minutes == widget.defaultMinutes;
+    return GestureDetector(
+      onTap: () => Navigator.pop(context, minutes),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+        decoration: BoxDecoration(
+          color: selected ? accent : p.tint(accent),
+          borderRadius: BorderRadius.circular(AppTheme.radius),
+          border: Border.all(
+              color: selected ? accent : accent.withValues(alpha: 0.35),
+              width: AppTheme.hair),
+        ),
+        child: Text(label,
+            style: TextStyle(
+                fontFamily: AppTheme.sans,
+                color: selected ? Colors.white : p.ink,
+                fontWeight: FontWeight.w600,
+                fontSize: 13.5)),
       ),
     );
   }

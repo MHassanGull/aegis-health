@@ -6,12 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/notifications.dart';
 
 /// A single repeating health reminder, stored on-device (works offline).
+///
+/// The interval is held in MINUTES rather than hours. Hours were enough for
+/// real use, but they made the feature impossible to test: waiting an hour to
+/// find out whether a notification fires is not a test, it is a guess.
 class Reminder {
   final int id;
   final String type; // water | food | activity | meds | recheck | custom
   final String title;
   final String body;
-  final int everyHours;
+  final int everyMinutes;
   bool enabled;
 
   Reminder({
@@ -19,7 +23,7 @@ class Reminder {
     required this.type,
     required this.title,
     required this.body,
-    required this.everyHours,
+    required this.everyMinutes,
     this.enabled = true,
   });
 
@@ -28,26 +32,47 @@ class Reminder {
         'type': type,
         'title': title,
         'body': body,
-        'everyHours': everyHours,
+        'everyMinutes': everyMinutes,
         'enabled': enabled,
       };
 
-  factory Reminder.fromJson(Map<String, dynamic> j) => Reminder(
-        id: j['id'] as int,
-        type: j['type'] as String,
-        title: j['title'] as String,
-        body: j['body'] as String,
-        everyHours: (j['everyHours'] as num).toInt(),
-        enabled: j['enabled'] as bool? ?? true,
-      );
+  factory Reminder.fromJson(Map<String, dynamic> j) {
+    // Reminders saved by an older build stored hours. Convert them rather than
+    // dropping them, so nobody loses a reminder on upgrade.
+    final minutes = j['everyMinutes'] != null
+        ? (j['everyMinutes'] as num).toInt()
+        : ((j['everyHours'] as num?)?.toInt() ?? 1) * 60;
+    return Reminder(
+      id: j['id'] as int,
+      type: j['type'] as String,
+      title: j['title'] as String,
+      body: j['body'] as String,
+      everyMinutes: minutes,
+      enabled: j['enabled'] as bool? ?? true,
+    );
+  }
+
+  Duration get interval => Duration(minutes: everyMinutes);
 
   String get everyLabel {
-    if (everyHours == 1) return 'Every hour';
-    if (everyHours < 24) return 'Every $everyHours hours';
-    if (everyHours == 24) return 'Every day';
-    if (everyHours == 168) return 'Every week';
-    return 'Every ${everyHours ~/ 24} days';
+    final m = everyMinutes;
+    if (m < 60) return m == 1 ? 'Every minute' : 'Every $m minutes';
+    if (m % 60 != 0) {
+      final h = m ~/ 60;
+      final rem = m % 60;
+      return 'Every ${h}h ${rem}m';
+    }
+    final h = m ~/ 60;
+    if (h == 1) return 'Every hour';
+    if (h < 24) return 'Every $h hours';
+    if (h == 24) return 'Every day';
+    if (h == 168) return 'Every week';
+    if (h % 24 == 0) return 'Every ${h ~/ 24} days';
+    return 'Every $h hours';
   }
+
+  /// True for intervals only ever chosen to watch the feature work.
+  bool get isTestInterval => everyMinutes < 15;
 }
 
 /// Preset reminder templates the user can add with one tap.
@@ -57,22 +82,22 @@ class ReminderPreset {
   final String body;
   final IconData icon;
   final Color color;
-  final int defaultHours;
+  final int defaultMinutes;
   const ReminderPreset(this.type, this.title, this.body, this.icon, this.color,
-      this.defaultHours);
+      this.defaultMinutes);
 }
 
 const kReminderPresets = <ReminderPreset>[
   ReminderPreset('water', 'Drink water', 'Time for a glass of water',
-      Icons.local_drink_rounded, Color(0xFF3D8BF2), 2),
+      Icons.local_drink_rounded, Color(0xFF3D8BF2), 120),
   ReminderPreset('food', 'Eat healthy', 'Time for a balanced meal or a healthy snack 🍎',
-      Icons.restaurant_rounded, Color(0xFFFF7A63), 4),
+      Icons.restaurant_rounded, Color(0xFFFF7A63), 240),
   ReminderPreset('activity', 'Move your body', 'Stand up and move for a few minutes 🚶',
-      Icons.directions_run_rounded, Color(0xFF20A57A), 2),
+      Icons.directions_run_rounded, Color(0xFF20A57A), 120),
   ReminderPreset('meds', 'Take medication', 'Time to take your medication ⏰',
-      Icons.medication_rounded, Color(0xFF8A6DF0), 12),
+      Icons.medication_rounded, Color(0xFF8A6DF0), 720),
   ReminderPreset('recheck', 'Re-check your risk', 'Run your Aegis health check and track your trend 🩺',
-      Icons.favorite_rounded, Color(0xFFEB5B8A), 168),
+      Icons.favorite_rounded, Color(0xFFEB5B8A), 10080),
 ];
 
 IconData reminderIcon(String type) => kReminderPresets
@@ -83,7 +108,7 @@ IconData reminderIcon(String type) => kReminderPresets
 Color reminderColor(String type) => kReminderPresets
     .firstWhere((p) => p.type == type,
         orElse: () => const ReminderPreset(
-            '', '', '', Icons.notifications_rounded, Color(0xFFF2A03D), 1))
+            '', '', '', Icons.notifications_rounded, Color(0xFFF2A03D), 60))
     .color;
 
 /// Persists reminders locally and keeps the scheduled notifications in sync.
@@ -113,7 +138,7 @@ class ReminderStore {
           id: r.id,
           title: r.title,
           body: r.body,
-          every: Duration(hours: r.everyHours),
+          every: r.interval,
         );
       } else {
         await NotificationService.instance.cancel(r.id);
@@ -129,7 +154,7 @@ class ReminderStore {
         id: r.id,
         title: r.title,
         body: r.body,
-        every: Duration(hours: r.everyHours),
+        every: r.interval,
       );
     }
   }
