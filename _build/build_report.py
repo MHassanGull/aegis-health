@@ -213,6 +213,9 @@ def front_matter(doc):
               "and Chronic Kidney Disease",
          size=14, align=WD_ALIGN_PARAGRAPH.CENTER, color=INK, space_after=24)
 
+    # The title page carries the degree-awarding university's crest alone. The
+    # college crest appears on the approval certificate instead, where it sits
+    # with the signatures it belongs to.
     if (ASSETS / "logo_university.png").exists():
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -272,6 +275,23 @@ def front_matter(doc):
 
     # --- Certificate of approval -----------------------------------------
     doc.add_page_break()
+    # The college crest sits here rather than on the title page, small and
+    # centred above the heading, the way a crest sits on institutional
+    # letterhead. This is the page that carries the signatures, so it is the
+    # page where the awarding college belongs.
+    if (ASSETS / "logo_college.png").exists():
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(2)
+        p.add_run().add_picture(str(ASSETS / "logo_college.png"), height=Cm(2.2))
+        para(doc, "Govt. Graduate College Gulberg (Boys), Lahore",
+             size=9, italic=True, color=MUTED,
+             align=WD_ALIGN_PARAGRAPH.CENTER, space_after=4)
+        para(doc, "Affiliated with the University of the Punjab",
+             size=9, italic=True, color=MUTED,
+             align=WD_ALIGN_PARAGRAPH.CENTER, space_after=10)
+
     heading(doc, "Certificate of Approval")
     rule(doc)
     para(doc,

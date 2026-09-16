@@ -1,19 +1,21 @@
 name: Supabase keep-alive
 
-# Runs in GitHub's cloud (works even when your laptop is off) so the free-tier
-# Supabase project never idles for 7 days and gets paused.
+# Supabase pauses a free project after 7 days without activity. This runs one
+# trivial query every 2 days so that never happens, and it runs in GitHub's
+# cloud, so it works with the laptop switched off.
 #
-# Setup (one time):
-#   1. Push this repo to GitHub.
-#   2. Repo → Settings → Secrets and variables → Actions → New repository secret
-#      Name:  DATABASE_URL
-#      Value: your Supabase session-pooler URL (same as in backend/.env)
-#   3. Done — it pings the DB every 2 days automatically.
+# This one DOES need a secret, because a database URL contains the password:
+#   Repo -> Settings -> Secrets and variables -> Actions -> New repository secret
+#     Name:  DATABASE_URL
+#     Value: the DATABASE_URL line from backend/.env
+#
+# Until that secret exists the job skips quietly rather than failing, so it
+# does not send a failure email every two days.
 
 on:
   schedule:
     - cron: "0 12 */2 * *"   # every 2 days at 12:00 UTC
-  workflow_dispatch:          # lets you run it manually from the Actions tab
+  workflow_dispatch:          # or run it by hand from the Actions tab
 
 jobs:
   ping:
@@ -23,5 +25,14 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::notice::DATABASE_URL secret is not set, so this keep-alive is skipped."
+            echo "Add it under Settings > Secrets and variables > Actions to enable it."
+            exit 0
+          fi
           sudo apt-get -qq update && sudo apt-get -qq install -y postgresql-client
-          psql "$DATABASE_URL" -c "select 1;" && echo "keep-alive OK"
+          if psql "$DATABASE_URL" -c "select 1;" >/dev/null 2>&1; then
+            echo "Database answered. Project stays active."
+          else
+            echo "::notice::Database did not answer. It may be paused; open the Supabase dashboard to restore it."
+          fi

@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../core/api_client.dart';
 import '../core/theme.dart';
+import 'login_screen.dart';
 
 class _Msg {
   final String role; // user | assistant
@@ -76,11 +77,40 @@ class _ChatScreenState extends State<ChatScreen> {
       final reply = await ApiClient.instance.sendChat(text);
       _messages.add(_Msg('assistant', reply['text'] as String));
     } catch (e) {
-      _messages.add(_Msg('assistant',
-          'Sorry, I couldn’t reach the assistant. Is the backend running?'));
+      // Report what actually went wrong. Claiming the backend is down when the
+      // session has merely expired sends the reader hunting for a problem that
+      // is not there.
+      _messages.add(_Msg('assistant', _explain(e)));
+      if (e is ApiException && e.status == 401 && mounted) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (r) => false);
+        return;
+      }
     }
     if (mounted) setState(() => _sending = false);
     _scrollToEnd();
+  }
+
+  /// Turn an exception into something the reader can act on.
+  String _explain(Object e) {
+    if (e is ApiException) {
+      if (e.status == 401) return ApiClient.sessionExpiredMessage;
+      if (e.status == 0) return e.message; // timeout, already phrased
+      if (e.status == 429) {
+        return 'Too many messages just now. Wait a moment and try again.';
+      }
+      if (e.status >= 500) {
+        return 'The server had a problem answering. Please try again.';
+      }
+      return e.message;
+    }
+    final s = e.toString();
+    if (s.contains('SocketException') || s.contains('Failed host lookup')) {
+      return 'No internet connection. Check your network and try again.';
+    }
+    return 'Something went wrong reaching the assistant. Please try again.';
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -24,15 +25,21 @@ class ApiClient {
   // JWT lives in encrypted (Keystore-backed) storage, not plain prefs.
   static const FlutterSecureStorage _secure = FlutterSecureStorage();
   static const _tokenKey = 'access_token';
+  static const _refreshKey = 'refresh_token';
   static const _userKey = 'username';
   static const _avatarKey = 'avatar_b64';
   static const _avatarColorKey = 'avatar_color';
   static const _baseUrlKey = 'api_base_url';
   String? _token;
+  String? _refresh;
   String? _username;
   String _avatarB64 = '';
   String _avatarColor = '#20A57A';
   String? _baseOverride;
+
+  /// Requests are given a ceiling so a sleeping free-tier server surfaces as
+  /// a clear message rather than a spinner that never resolves.
+  static const Duration _timeout = Duration(seconds: 60);
 
   /// Bumps whenever the cached avatar changes so avatar widgets can rebuild.
   final ValueNotifier<int> avatarRev = ValueNotifier<int>(0);
@@ -61,8 +68,10 @@ class ApiClient {
     final prefs = await SharedPreferences.getInstance();
     try {
       _token = await _secure.read(key: _tokenKey);
+      _refresh = await _secure.read(key: _refreshKey);
     } catch (_) {
       _token = null; // keystore hiccup → treat as logged out
+      _refresh = null;
     }
     _username = prefs.getString(_userKey);
     _avatarB64 = prefs.getString(_avatarKey) ?? '';
@@ -93,12 +102,24 @@ class ApiClient {
 
   bool get isAuthenticated => _token != null;
 
-  Future<void> _setToken(String? token) async {
+  /// Raised when the session cannot be renewed and the user must sign in
+  /// again. Screens catch this to send the user back to the login page
+  /// instead of showing a misleading "cannot reach the server" message.
+  static const sessionExpiredMessage =
+      'Your session has expired. Please sign in again.';
+
+  Future<void> _setToken(String? token, {String? refresh}) async {
     _token = token;
     if (token == null) {
+      _refresh = null;
       await _secure.delete(key: _tokenKey);
-    } else {
-      await _secure.write(key: _tokenKey, value: token);
+      await _secure.delete(key: _refreshKey);
+      return;
+    }
+    await _secure.write(key: _tokenKey, value: token);
+    if (refresh != null) {
+      _refresh = refresh;
+      await _secure.write(key: _refreshKey, value: refresh);
     }
   }
 
@@ -116,6 +137,57 @@ class ApiClient {
     throw ApiException(r.statusCode, msg);
   }
 
+  /// Exchange the refresh token for a new access token.
+  ///
+  /// Returns false when the refresh token is missing or itself expired, which
+  /// means the session is genuinely over.
+  Future<bool> _renew() async {
+    if (_refresh == null) return false;
+    try {
+      final r = await http
+          .post(Uri.parse('$_base/api/auth/refresh/'),
+              headers: const {'Content-Type': 'application/json'},
+              body: jsonEncode({'refresh': _refresh}))
+          .timeout(_timeout);
+      if (r.statusCode != 200) return false;
+      final data = jsonDecode(r.body) as Map<String, dynamic>;
+      final access = data['access'] as String?;
+      if (access == null) return false;
+      // Simple JWT may rotate the refresh token; keep the new one if sent.
+      await _setToken(access, refresh: data['refresh'] as String?);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Run an authenticated request. If the access token has expired, renew it
+  /// once and replay the request, so a long-idle session recovers silently
+  /// rather than surfacing as a network error.
+  Future<dynamic> _send(Future<http.Response> Function() request) async {
+    http.Response r;
+    try {
+      r = await request().timeout(_timeout);
+    } on TimeoutException {
+      throw ApiException(0,
+          'The server took too long to respond. It may be waking up — try again.');
+    }
+    if (r.statusCode == 401 && _token != null) {
+      if (await _renew()) {
+        try {
+          r = await request().timeout(_timeout);
+        } on TimeoutException {
+          throw ApiException(0,
+              'The server took too long to respond. Please try again.');
+        }
+      } else {
+        await _setToken(null);
+        throw ApiException(401, sessionExpiredMessage);
+      }
+    }
+    return _decode(r);
+  }
+
   // -- Auth ---------------------------------------------------------------
   Future<void> register(String username, String email, String password) async {
     final r = await http.post(Uri.parse('$_base/api/auth/register/'),
@@ -130,7 +202,8 @@ class ApiClient {
         headers: _headers,
         body: jsonEncode({'username': username, 'password': password}));
     final data = _decode(r);
-    await _setToken(data['access'] as String);
+    await _setToken(data['access'] as String,
+        refresh: data['refresh'] as String?);
     _username = username;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, username);
@@ -139,10 +212,9 @@ class ApiClient {
   /// Change the signed-in user's password. The server verifies the current
   /// one, so a borrowed unlocked phone cannot lock the owner out.
   Future<void> changePassword(String current, String next) async {
-    final r = await http.post(Uri.parse('$_base/api/auth/password/'),
+    await _send(() => http.post(Uri.parse('$_base/api/auth/password/'),
         headers: _headers,
-        body: jsonEncode({'current_password': current, 'new_password': next}));
-    _decode(r);
+        body: jsonEncode({'current_password': current, 'new_password': next})));
   }
 
   Future<void> logout() async {
@@ -155,51 +227,50 @@ class ApiClient {
 
   // -- Predictions --------------------------------------------------------
   Future<Map<String, dynamic>> predict(Map<String, num> answers) async {
-    final r = await http.post(Uri.parse('$_base/api/predict/'),
-        headers: _headers, body: jsonEncode(answers));
-    return _decode(r) as Map<String, dynamic>;
+    return await _send(() => http.post(Uri.parse('$_base/api/predict/'),
+        headers: _headers, body: jsonEncode(answers))) as Map<String, dynamic>;
   }
 
   Future<List<dynamic>> history() async {
-    final r =
-        await http.get(Uri.parse('$_base/api/history/'), headers: _headers);
-    return _decode(r) as List<dynamic>;
+    return await _send(() =>
+        http.get(Uri.parse('$_base/api/history/'), headers: _headers))
+        as List<dynamic>;
   }
 
   /// Live model card: architecture (introspected from the trained network) +
   /// real training metrics. Powers the "Under the Hood" transparency screen.
   Future<Map<String, dynamic>> modelCard() async {
-    final r = await http.get(Uri.parse('$_base/api/model/card/'),
-        headers: _headers);
-    return _decode(r) as Map<String, dynamic>;
+    return await _send(() => http.get(Uri.parse('$_base/api/model/card/'),
+        headers: _headers)) as Map<String, dynamic>;
   }
 
   // -- Profile ------------------------------------------------------------
   Future<Map<String, dynamic>> getProfile() async {
-    final r = await http.get(Uri.parse('$_base/api/profile/'), headers: _headers);
-    final profile = _decode(r) as Map<String, dynamic>;
+    final profile = await _send(() =>
+        http.get(Uri.parse('$_base/api/profile/'), headers: _headers))
+        as Map<String, dynamic>;
     _cacheAvatarFrom(profile);
     return profile;
   }
 
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
-    final r = await http.patch(Uri.parse('$_base/api/profile/'),
-        headers: _headers, body: jsonEncode(data));
-    final profile = _decode(r) as Map<String, dynamic>;
+    final profile = await _send(() => http.patch(
+        Uri.parse('$_base/api/profile/'),
+        headers: _headers,
+        body: jsonEncode(data))) as Map<String, dynamic>;
     _cacheAvatarFrom(profile);
     return profile;
   }
 
   // -- Chat ---------------------------------------------------------------
   Future<Map<String, dynamic>> sendChat(String message) async {
-    final r = await http.post(Uri.parse('$_base/api/chat/'),
-        headers: _headers, body: jsonEncode({'message': message}));
-    return _decode(r) as Map<String, dynamic>;
+    return await _send(() => http.post(Uri.parse('$_base/api/chat/'),
+        headers: _headers,
+        body: jsonEncode({'message': message}))) as Map<String, dynamic>;
   }
 
   Future<List<dynamic>> chatHistory() async {
-    final r = await http.get(Uri.parse('$_base/api/chat/history/'),
-        headers: _headers);
-    return _decode(r) as List<dynamic>;
+    return await _send(() => http.get(Uri.parse('$_base/api/chat/history/'),
+        headers: _headers)) as List<dynamic>;
   }
 }

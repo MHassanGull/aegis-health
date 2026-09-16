@@ -1,18 +1,18 @@
 name: API keep-alive
 
-# Render's free tier puts a service to sleep after 15 minutes of no traffic,
-# and the next request then takes ~50 seconds to wake it. This pings the health
-# endpoint every 10 minutes so the API is always warm — important during a live
-# demo or viva.
+# Render's free tier puts a service to sleep after 15 minutes without traffic,
+# and the next request then waits ~50 seconds for it to wake. This pings the
+# health endpoint often enough that it never falls asleep, which matters during
+# a live demo.
 #
-# Setup (one time):
-#   Repo -> Settings -> Secrets and variables -> Actions -> New repository secret
-#     Name:  API_URL
-#     Value: https://<your-service>.onrender.com
+# No configuration is required: the service URL is public, so it is simply
+# written below. Set an API_URL repository secret only if you move the service
+# to a different address.
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # every 10 minutes
+    # Every 14 minutes, just inside Render's 15-minute idle timeout.
+    - cron: "*/14 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -21,9 +21,16 @@ jobs:
     steps:
       - name: Ping the API health endpoint
         env:
-          API_URL: ${{ secrets.API_URL }}
+          API_URL: ${{ secrets.API_URL || 'https://aegis-health-jc2o.onrender.com' }}
         run: |
-          if [ -z "$API_URL" ]; then echo "API_URL secret not set"; exit 1; fi
-          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$API_URL/api/health/")
-          echo "health check -> HTTP $code"
-          [ "$code" = "200" ]
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$API_URL/api/health/" || echo "000")
+          echo "GET $API_URL/api/health/ -> HTTP $code"
+          if [ "$code" = "200" ]; then
+            echo "Service is awake."
+          else
+            # A cold start or a brief blip is expected on a free tier and is not
+            # worth failing the run over, because a failed run emails the repo
+            # owner every time. The ping has already done its job: it woke the
+            # service. Only the log records the status.
+            echo "::notice::Service returned HTTP $code. It was still pinged and should now be warming up."
+          fi
