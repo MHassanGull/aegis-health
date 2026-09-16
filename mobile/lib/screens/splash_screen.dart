@@ -9,6 +9,7 @@ import '../widgets/shield_logo.dart';
 import 'onboarding_screen.dart';
 import 'login_screen.dart';
 import 'home_shell.dart';
+import 'permissions_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -32,7 +33,12 @@ class _SplashScreenState extends State<SplashScreen> {
     final seen = prefs.getBool('seen_onboarding') ?? false;
     Widget next;
     if (ApiClient.instance.isAuthenticated) {
-      next = const HomeShell();
+      // A returning user who has never seen the permissions screen (an
+      // install that predates it, or one where it was skipped) still gets it
+      // once, rather than silently missing out on the reminder fix forever.
+      next = await PermissionsScreen.alreadySeen()
+          ? const HomeShell()
+          : const PermissionsScreen(onboarding: true);
     } else if (!seen) {
       next = const OnboardingScreen();
     } else {

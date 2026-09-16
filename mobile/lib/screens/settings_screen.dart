@@ -8,6 +8,7 @@ import '../state/auth_state.dart';
 import '../state/theme_controller.dart';
 import '../widgets/shield_logo.dart';
 import 'login_screen.dart';
+import 'permissions_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -48,6 +49,38 @@ class SettingsScreen extends StatelessWidget {
                 activeTrackColor: AppTheme.green,
                 onChanged: (v) => context.read<ThemeController>().setDark(v),
               ),
+            ]),
+          ),
+          const SizedBox(height: 14),
+          SoftCard(
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) =>
+                        const PermissionsScreen(onboarding: false))),
+            child: Row(children: [
+              Container(
+                height: 44, width: 44,
+                decoration: BoxDecoration(
+                    color: p.tint(AppTheme.green),
+                    borderRadius: BorderRadius.circular(AppTheme.radius)),
+                child: const Icon(Icons.notifications_active_rounded,
+                    color: AppTheme.green),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Notifications & battery',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, color: p.ink)),
+                    Text('Fix reminders that stop firing',
+                        style: TextStyle(color: p.subtle, fontSize: 12.5)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: p.subtle),
             ]),
           ),
           const SizedBox(height: 14),

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../state/auth_state.dart';
 import '../widgets/auth_scaffold.dart';
-import 'home_shell.dart';
+import 'permissions_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -57,8 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await context.read<AuthState>().register(
           _username.text.trim(), _email.text.trim(), _password.text);
       if (!mounted) return;
-      Navigator.pushAndRemoveUntil(context,
-          MaterialPageRoute(builder: (_) => const HomeShell()), (r) => false);
+      await PermissionsScreen.routeAfterAuth(context);
     } catch (e) {
       setState(() => _error = _friendly(e.toString()));
     } finally {

@@ -65,7 +65,7 @@ class NotificationService {
 
   Future<void> cancel(int id) => _plugin.cancel(id);
 
-  /// Fire a notification immediately (used by the "Test" button for demos).
+  /// Fire a notification immediately, used to confirm a reminder was set.
   Future<void> showNow(int id, String title, String body) async {
     await init();
     await _plugin.show(id, title, body, _details);

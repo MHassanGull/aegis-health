@@ -17,6 +17,11 @@
          SCHEDULE_EXACT_ALARM covers Android 12. -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- Lets the app ask the user directly to exempt it from battery
+         optimisation (the standard cross-vendor dialog; Samsung, Xiaomi,
+         Oppo and others all honour it), so reminders survive Doze without
+         the user having to find the setting themselves. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <application
         android:label="Aegis Health"
         android:name="${applicationName}"
