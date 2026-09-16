@@ -70,9 +70,6 @@ class Reminder {
     if (h % 24 == 0) return 'Every ${h ~/ 24} days';
     return 'Every $h hours';
   }
-
-  /// True for intervals only ever chosen to watch the feature work.
-  bool get isTestInterval => everyMinutes < 15;
 }
 
 /// Preset reminder templates the user can add with one tap.

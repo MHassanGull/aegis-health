@@ -162,8 +162,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     p,
                     onToggle: (v) => _toggle(_items[i], v),
                     onDelete: () => _delete(_items[i]),
-                    onTest: () => NotificationService.instance
-                        .showNow(999000 + i, _items[i].title, _items[i].body),
                   ),
                 );
               },
@@ -215,9 +213,8 @@ class _ReminderCard extends StatelessWidget {
   final Palette p;
   final ValueChanged<bool> onToggle;
   final VoidCallback onDelete;
-  final VoidCallback onTest;
   const _ReminderCard(this.r, this.p,
-      {required this.onToggle, required this.onDelete, required this.onTest});
+      {required this.onToggle, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -254,25 +251,14 @@ class _ReminderCard extends StatelessWidget {
                 activeThumbColor: AppTheme.green,
                 onChanged: onToggle,
               ),
-              Row(mainAxisSize: MainAxisSize.min, children: [
-                InkWell(
-                  onTap: onTest,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Text('Test',
-                        style: TextStyle(
-                            color: AppTheme.green,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                InkWell(
-                  onTap: onDelete,
+              InkWell(
+                onTap: onDelete,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
                   child: Icon(Icons.delete_outline_rounded,
                       size: 18, color: p.subtle),
                 ),
-              ]),
+              ),
             ],
           ),
         ],
@@ -354,11 +340,6 @@ class _IntervalPickerState extends State<_IntervalPicker> {
     super.dispose();
   }
 
-  // Short intervals exist so the feature can actually be tested. Waiting an
-  // hour to find out whether a notification fires is not a test.
-  static const _testOptions = [
-    (1, '1 min'), (2, '2 min'), (5, '5 min'), (10, '10 min'), (15, '15 min'),
-  ];
   static const _normalOptions = [
     (30, '30 min'), (60, 'Every hour'), (120, 'Every 2 hours'),
     (180, 'Every 3 hours'), (240, 'Every 4 hours'), (360, 'Every 6 hours'),
@@ -392,17 +373,6 @@ class _IntervalPickerState extends State<_IntervalPicker> {
             children: [
               Text('How often?', style: t.headlineSmall),
               const SizedBox(height: 16),
-              Text('FOR TESTING',
-                  style: AppType.label.copyWith(color: AppTheme.coral)),
-              const SizedBox(height: 4),
-              Text('Short intervals, so you can watch it fire.',
-                  style: t.bodySmall),
-              const SizedBox(height: 10),
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final (m, label) in _testOptions)
-                  _chip(label, m, p, AppTheme.coral),
-              ]),
-              const SizedBox(height: 22),
               Text('EVERYDAY', style: AppType.label.copyWith(color: p.subtle)),
               const SizedBox(height: 10),
               Wrap(spacing: 8, runSpacing: 8, children: [
