@@ -208,7 +208,6 @@ class _HomeTabState extends State<HomeTab> {
 class _Masthead extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final p = Palette.of(context);
     return Column(
       children: [
         Padding(
@@ -416,7 +415,6 @@ class _HeavyLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 30, bottom: 4),
       child: Column(

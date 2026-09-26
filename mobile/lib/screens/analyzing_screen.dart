@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../core/api_client.dart';
 import '../core/theme.dart';
 import '../widgets/ecg_line.dart';
-import '../widgets/shield_logo.dart';
 import 'result_screen.dart';
 
 class AnalyzingScreen extends StatefulWidget {

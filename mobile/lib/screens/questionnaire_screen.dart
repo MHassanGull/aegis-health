@@ -67,7 +67,6 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   Widget build(BuildContext context) {
     final p = Palette.of(context);
     final step = kSteps[_step];
-    final progress = (_step + 1) / kSteps.length;
     final last = _step == kSteps.length - 1;
     return Scaffold(
       body: SafeArea(

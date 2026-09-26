@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show SocketException;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -161,25 +162,39 @@ class ApiClient {
     }
   }
 
+  static const _wakingUpMessage =
+      'Could not reach the server — it may be waking up from sleep. Please try again in a few seconds.';
+
+  /// A free-tier server that has gone to sleep refuses the very first
+  /// connection outright (not a timeout), rather than just answering slowly.
+  /// One short wait-and-retry usually lands after it wakes, so this never
+  /// needs to surface as a raw socket error.
+  Future<http.Response> _attempt(Future<http.Response> Function() request,
+      {bool retryOnRefusal = true}) async {
+    try {
+      return await request().timeout(_timeout);
+    } on TimeoutException {
+      throw ApiException(0,
+          'The server took too long to respond. It may be waking up — try again.');
+    } on SocketException {
+      if (!retryOnRefusal) throw ApiException(0, _wakingUpMessage);
+      await Future.delayed(const Duration(seconds: 5));
+      return _attempt(request, retryOnRefusal: false);
+    } on http.ClientException {
+      if (!retryOnRefusal) throw ApiException(0, _wakingUpMessage);
+      await Future.delayed(const Duration(seconds: 5));
+      return _attempt(request, retryOnRefusal: false);
+    }
+  }
+
   /// Run an authenticated request. If the access token has expired, renew it
   /// once and replay the request, so a long-idle session recovers silently
   /// rather than surfacing as a network error.
   Future<dynamic> _send(Future<http.Response> Function() request) async {
-    http.Response r;
-    try {
-      r = await request().timeout(_timeout);
-    } on TimeoutException {
-      throw ApiException(0,
-          'The server took too long to respond. It may be waking up — try again.');
-    }
+    var r = await _attempt(request);
     if (r.statusCode == 401 && _token != null) {
       if (await _renew()) {
-        try {
-          r = await request().timeout(_timeout);
-        } on TimeoutException {
-          throw ApiException(0,
-              'The server took too long to respond. Please try again.');
-        }
+        r = await _attempt(request);
       } else {
         await _setToken(null);
         throw ApiException(401, sessionExpiredMessage);

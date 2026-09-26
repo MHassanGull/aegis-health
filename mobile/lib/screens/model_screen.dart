@@ -83,7 +83,6 @@ class _Content extends StatelessWidget {
     final kid = metrics['kidney'] as Map<String, dynamic>;
     final methodology = (card['methodology'] as List).cast<String>();
     final layers = (arch['layer_sizes'] as List).map((e) => e as int).toList();
-    final overall = (card['overall_accuracy'] as num?)?.toDouble() ?? 0;
     final calibrated = card['calibrated'] == true;
     final crossValidated = card['cross_validated'] == true;
     final folds = (card['n_folds'] as num?)?.toInt() ?? 5;
